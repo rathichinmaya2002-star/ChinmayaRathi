@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chinmaya Rathi</title>
+    <meta name="description" content="Growth Strategist and Culture Analyst. I study how culture moves.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Roboto+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── tokens ── */
+        :root {
+            --bg:      #ffffff;
+            --bg-text: rgba(0,0,0,0.07);
+            --panel:   #0f0f0f;
+            --green:   #3dce48;
+            --cyan:    #4fd8e8;
+            --yellow:  #ffe84c;
+            --pink:    #ff4db3;
+            --blue:    #2222cc;
+            --dark:    #1a1a1a;
+            --f-hand:  'Caveat', cursive;
+            --f-mono:  'Roboto Mono', monospace;
+        }
+
+        /* smooth theme transition */
+        body { transition: background 0.35s ease; }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: var(--f-mono);
+        }
+
+        /* ── oval background text ── */
+        #bg-text {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            display: block;
+        }
+
+        /* ── scene ── */
+        #scene {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* ── objects ── */
+        .obj {
+            position: absolute;
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+            will-change: transform;
+        }
+
+        .obj svg {
+            display: block;
+            transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        .obj:hover svg {
+            transform: scale(1.06) rotate(-2deg);
+        }
+
+        /* Static layout positions — JS overrides transform at runtime */
+        #laptop-obj {
+            left: 10%;
+            top: 50%;
+            width: clamp(266px, 36vw, 532px);
+            z-index: 10;
+        }
+
+        #diary-obj {
+            right: 23%;
+            top: 10%;
+            width: clamp(96px, 12.75vw, 180px);
+            z-index: 10;
+        }
+
+        #easel-obj {
+            right: 14%;
+            bottom: 10%;
+            width: clamp(168px, 24vw, 348px);
+            z-index: 10;
+        }
+
+        /* background strokes: lower z, moves with mouse (not against) */
+        #strokes {
+            will-change: transform;
+            transition: transform 0.05s linear;
+        }
+
+        /* ── badge top-left ── */
+        #badge:hover { transform: translate(6%, 55%) scale(2.3); opacity: 1; filter: drop-shadow(black 0px 0px 0.5rem) drop-shadow(black 0px 0px 0.5rem); }
+
+        #badge {
+            display: block;
+            position: fixed;
+            top: -2.5rem;
+            left: -1.8rem;
+            font-size: min(4vw, 1.3rem);
+            padding: 1rem 1rem 1rem 0.5em;
+            font-family: var(--f-mono);
+            letter-spacing: 0.025em;
+            z-index: 88888888;
+            transition: all 0.3s;
+            transform: scale(2);
+            transform-origin: top left;
+            opacity: 0.75;
+            text-decoration: none;
+            filter: drop-shadow(black 0px 0px 0.2rem) drop-shadow(black 0px 0px 0.2rem);
+            background: rgb(0, 255, 255);
+            color: rgb(0, 0, 0);
+        }
+
+        .badge-inner {
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 6px;
+            letter-spacing: -0.01em;
+        }
+
+        /* ── linkedin ── */
+        #linkedin:hover { transform: translate(-6%, -55%) scale(2.3); opacity: 1; filter: drop-shadow(black 0px 0px 0.5rem) drop-shadow(black 0px 0px 0.5rem); }
+
+        #linkedin {
+            display: block;
+            position: fixed;
+            bottom: -3.6rem;
+            right: -1.8rem;
+            font-size: min(4vw, 1.3rem);
+            padding: 1rem 1rem 1rem 0.5em;
+            font-family: var(--f-mono);
+            letter-spacing: 0.025em;
+            z-index: 88888888;
+            transition: all 0.3s;
+            transform: scale(2);
+            transform-origin: bottom right;
+            opacity: 0.75;
+            text-decoration: none;
+            filter: drop-shadow(black 0px 0px 0.2rem) drop-shadow(black 0px 0px 0.2rem);
+            background: rgb(0, 255, 255);
+            color: rgb(0, 0, 0);
+        }
+
+        /* ── custom cursor ── */
+        * { cursor: none !important; }
+        #custom-cursor {
+            position: fixed;
+            top: -200px;
+            left: -200px;
+            z-index: 99999999;
+            pointer-events: none;
+            will-change: left, top;
+        }
+        #custom-cursor svg {
+            display: block;
+            filter: drop-shadow(rgba(255,255,255,0.4) 0px 0px 5px);
+            transform: rotate(-35deg);
+            transform-origin: 50% 100%;
+        }
+
+        /* ── panels ── */
+        .panel {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: var(--panel);
+            color: #eee;
+            transform: translateX(110%);
+            transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .panel.open { transform: translateX(0); }
+
+        .panel-inner {
+            padding: clamp(36px, 6vw, 80px);
+            min-height: 100%;
+        }
+
+        .panel-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 48px;
+        }
+
+        .panel-back {
+            background: none;
+            border: 2px solid #333;
+            color: #666;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .panel-back:hover { border-color: #fff; color: #fff; }
+
+        .panel-title {
+            font-family: var(--f-hand);
+            font-size: clamp(60px, 11vw, 128px);
+            font-weight: 700;
+            line-height: 1;
+            color: var(--green);
+            letter-spacing: -2px;
+            margin-bottom: 36px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .panel-body p {
+            font-size: clamp(14px, 1.4vw, 17px);
+            line-height: 1.9;
+            color: #999;
+            max-width: 720px;
+            margin-bottom: 26px;
+        }
+
+        .panel-body h2 {
+            font-family: var(--f-hand);
+            font-size: clamp(28px, 3.5vw, 50px);
+            color: var(--cyan);
+            margin: 40px 0 16px;
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .chip {
+            font-size: 11px;
+            font-family: var(--f-mono);
+            padding: 5px 14px;
+            border: 1.5px solid var(--green);
+            color: var(--green);
+        }
+
+        /* ── whiteboard projects panel ── */
+        #panel-projects {
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: none !important;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            overflow: hidden;
+        }
+        #panel-projects.open { opacity: 1; pointer-events: auto; }
+
+        @keyframes wb-open {
+            0%   { transform: scale(0.04); opacity: 0; }
+            100% { transform: scale(1);    opacity: 1; }
+        }
+        .wb-card {
+            position: relative;
+            width: 70vw;
+            height: 72vh;
+            background: #f8f8f3;
+            background-image: repeating-linear-gradient(
+                transparent, transparent 39px,
+                rgba(0,0,0,0.045) 39px, rgba(0,0,0,0.045) 40px
+            );
+            border-radius: 10px;
+            padding: clamp(24px, 4vw, 52px);
+            transform: scale(0.04);
+            opacity: 0;
+        }
+        .wb-border-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+        #panel-projects.open .wb-card {
+            animation: wb-open 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.05s both;
+        }
+        .wb-close {
+            position: absolute;
+            top: 16px; right: 20px;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            z-index: 2;
+            transition: transform 0.2s;
+        }
+        .wb-close:hover { transform: scale(1.1) rotate(-4deg); }
+        .wb-title-svg {
+            display: block;
+            width: 100%;
+            height: clamp(52px, 8.5vh, 100px);
+            overflow: visible;
+            margin-bottom: clamp(4px, 1.2vh, 14px);
+        }
+        .wb-board { padding-top: 0; }
+        .wb-item {
+            display: block;
+            margin-bottom: clamp(3px, 1vh, 12px);
+            transform: rotate(var(--r)) translateX(var(--x));
+            transform-origin: left center;
+        }
+        .wb-name {
+            font-family: var(--f-hand);
+            font-size: clamp(28px, 4vw, 58px);
+            font-weight: 700;
+            color: #e02020;
+            line-height: 1;
+            display: inline-block;
+            filter: url(#roughen);
+        }
+        .wb-desc {
+            font-family: var(--f-mono);
+            font-size: clamp(9px, 0.82vw, 11px);
+            color: #bbb;
+            margin-top: 1px;
+            padding-left: 2px;
+            letter-spacing: 0.02em;
+        }
+
+        /* ════════ about panel — hand-drawn CRT monitor on PlayStation scene ════════ */
+        #panel-about {
+            background: transparent;
+            transform: none !important;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #panel-about.open { opacity: 1; pointer-events: auto; }
+        /* slight wash so the monitor reads cleanly over the busy scene */
+        #panel-about::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* top-right back-to-menu badge — black w/ white border */
+        .about-back-btn {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            background: #000;
+            color: #fff;
+            border: 2px solid #fff;
+            outline: 2px solid #000;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 14px;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 4px 4px 0 #000;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .about-back-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #000; }
+
+        /* monitor stage — fixed aspect so SVG and HTML overlay stay aligned */
+        .about-stage {
+            position: relative;
+            z-index: 10;
+            width: min(86vw, 1120px);
+            aspect-ratio: 1000 / 700;
+            max-height: 82vh;
+        }
+        .about-monitor {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        /* HTML windows overlay the blue screen rect (viewBox 85,92 → 915,522) */
+        .about-screen-overlay {
+            position: absolute;
+            left: 8.5%;
+            top: 13.1%;
+            width: 83%;
+            height: 61.4%;
+            z-index: 5;
+        }
+
+        /* 24fps formation — each piece pops in over discrete frames using steps() */
+        #panel-about .mon-stand-grp,
+        #panel-about .mon-housing-grp,
+        #panel-about .mon-vent-grp,
+        #panel-about .mon-bezel-grp,
+        #panel-about .mon-screen-grp,
+        #panel-about .mon-led-grp {
+            opacity: 0;
+            transition: opacity 0.25s ease-out;
+        }
+        #panel-about.open .mon-stand-grp   { animation: pop-in   0.20s steps(5)   0.00s forwards; }
+        #panel-about.open .mon-housing-grp { animation: pop-in   0.30s steps(7)   0.18s forwards; }
+        #panel-about.open .mon-vent-grp    { animation: pop-in   0.20s steps(4)   0.42s forwards; }
+        #panel-about.open .mon-bezel-grp   { animation: pop-in   0.20s steps(5)   0.62s forwards; }
+        #panel-about.open .mon-screen-grp  { animation: pop-in   0.20s steps(5)   0.78s forwards; }
+        #panel-about.open .mon-led-grp     { animation: led-blink 0.50s steps(10) 0.95s forwards; }
+        #panel-about.open .about-text-win  { animation: pop-in   0.28s steps(7)   1.05s forwards; }
+        #panel-about.open .about-image-win { animation: pop-in   0.28s steps(7)   1.30s forwards; }
+
+        @keyframes pop-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes led-blink {
+            0%   { opacity: 0; }
+            25%  { opacity: 1; }
+            50%  { opacity: 0; }
+            75%  { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        /* main text window — cyan body, pink titlebar, tilted CCW */
+        .about-text-win {
+            position: absolute;
+            left: 3%;
+            top: 6%;
+            width: 60%;
+            background: #00e5ff;
+            border: 3px solid #000;
+            box-shadow: 10px 12px 0 #000;
+            transform: rotate(-1.2deg);
+            opacity: 0;
+            transition: opacity 0.25s ease-out;
+            z-index: 8;
+        }
+
+        /* image window — yellow body, yellow titlebar, tilted CW, overlaps bottom-right */
+        .about-image-win {
+            position: absolute;
+            right: 2%;
+            bottom: 3%;
+            width: 36%;
+            background: #faff00;
+            border: 3px solid #000;
+            box-shadow: 10px 12px 0 #000;
+            transform: rotate(1.5deg);
+            opacity: 0;
+            transition: opacity 0.25s ease-out;
+            z-index: 9;
+        }
+
+        /* shared titlebar shell */
+        .about-tb {
+            border-bottom: 3px solid #000;
+            display: flex;
+            align-items: center;
+            padding: 4px 6px 4px 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+        }
+        .about-tb-pink   { background: #ff00d6; }
+        .about-tb-yellow { background: #faff00; }
+        .about-tb-label {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            letter-spacing: 0.04em;
+            padding-left: 18px; /* compensates for sq btn so label visually centers */
+        }
+        .about-tb-pink   .about-tb-label { color: #ffffff; }
+        .about-tb-yellow .about-tb-label { color: #000000; }
+        .about-tb-sqbtn {
+            width: 14px; height: 14px;
+            border: 2px solid currentColor;
+            background: none;
+            flex-shrink: 0;
+        }
+        .about-tb-pink   .about-tb-sqbtn { border-color: #ffffff; }
+        .about-tb-yellow .about-tb-sqbtn { border-color: #000000; }
+
+        /* text body */
+        .about-text-body {
+            padding: 22px 24px;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            color: #000;
+            line-height: 1.55;
+        }
+        .about-text-body p { margin: 0 0 14px; }
+        .about-text-body p:last-of-type { margin-bottom: 18px; }
+
+        /* pastel-pink CTA button */
+        .about-cta {
+            display: block;
+            margin: 16px auto 6px;
+            background: #ffc5d3;
+            border: 2px solid #000;
+            color: #000;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 9px 24px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 #000;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+            letter-spacing: 0.02em;
+        }
+        .about-cta:hover {
+            transform: translate(-2px,-2px);
+            box-shadow: 6px 6px 0 #000;
+            background: #ffb0c5;
+        }
+
+        /* image body */
+        .about-image-body { padding: 0; line-height: 0; }
+        .about-image-body img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            object-position: top center;
+        }
+
+        @media (max-width: 720px) {
+            .about-text-body { font-size: 12px; padding: 14px 16px; }
+            .about-tb-label, .about-cta { font-size: 11px; }
+        }
+
+        /* contact */
+        .contact-wrap { max-width: 560px; margin-top: 20px; }
+
+        .field { margin-bottom: 20px; }
+        .field label {
+            display: block;
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 7px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .field input, .field textarea {
+            width: 100%;
+            background: #161616;
+            border: 2px solid #242424;
+            color: #eee;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            padding: 12px 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .field input:focus, .field textarea:focus { border-color: var(--green); }
+        .field textarea { min-height: 120px; resize: vertical; }
+
+        .btn-send {
+            background: var(--green);
+            border: none;
+            color: #000;
+            font-family: var(--f-mono);
+            font-size: 14px;
+            font-weight: 700;
+            padding: 14px 34px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-send:hover { opacity: 0.8; }
+
+        .contact-alt { margin-top: 36px; font-size: 13px; color: #555; }
+        .contact-alt a { color: var(--cyan); text-decoration: none; }
+        .contact-alt a:hover { text-decoration: underline; }
+
+        body { background: #111111; }
+    </style>
+</head>
+<body>
+
+<!-- oval bg text -->
+<canvas id="bg-text" aria-hidden="true"></canvas>
+
+<!-- badge top-left -->
+<a id="badge" href="https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME" target="_blank" rel="noreferrer">
+    <h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Contact</h2>
+    <span class="badge-inner">
+        <svg fill="none" style="width:2em;height:1.625em" viewBox="0 0 224 182">
+            <path d="M184 173h-62.889c-22.308 0-44.82-3.856-66.5-9-13.698-3.25-27.036-7.592-40.666-11-1.89-.472-6.718-1.99-7.722-4-1.068-2.136-.223-6.478-.223-8.722 0-8.443.894-16.694 2-25.056 2.973-22.462 3.815-44.008 10-66 2.012-7.153 3.271-14.701 3.945-22.11.491-5.41-1.201-11.878.61-17.056C24.31 5.046 25.494 5 30.556 5 38.914 5 46.87 7.767 55 9.556c11.506 2.53 22.825 7.933 34.556 9.222 12.203 1.34 23.299 3.125 35.222 6.444C142.36 30.116 160.247 32.94 178 36.778c7.877 1.703 17.998-.663 25.445 2.722C209.78 42.38 217 41.88 217 50c0 8.311-.122 16.493-1 24.778-1.479 13.963-.517 28.406-2.777 42.222-.765 4.674-1.498 10.62-3.445 15-.65 1.463-2.695 4.599-2.778 6-.274 4.67-3 9.442-3 14.5 0 3.827-.945 9.557-1.944 13.056-1.315 4.603-2.122 7.437-7.278 9.222-5.589 1.934-11.526 1.848-16.778-.778" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+            <path d="M27 10c-.578.082 10.877 15.592 12.222 17.222C46.939 36.58 53.75 45.755 60.055 56 64.325 62.938 67.21 71.297 72 77.778c3.709 5.018 7.62 11.24 10.5 16.778 4.186 8.049 14.633 16.606 23.722 18.222 5.389.958 10.839 1.188 16.222 2.166 4.031.733 8.699.056 12.778.056 11.762 0 23.672-9.894 31.778-18 3.551-3.551 7.427-6.529 11-10 1.801-1.75 4.038-2.972 5.777-4.778 1.627-1.689 1.731-4.304 3.223-6.222 5.71-7.342 12.528-13.68 18.222-21 2.398-3.083 5.514-5.736 8.278-8.5 1.916-1.917 3.176-5.338 5.5-6.5M6 147c9.994 0 19.57-7.906 27.778-13 6.054-3.758 12.173-6.748 18.222-10.444C62.858 116.92 76.24 114.38 87 109M197 172c-2.354-7.649-11.411-14.336-16.5-20.556-4.973-6.078-9.892-12.183-14.722-18.444-5.089-6.596-10.03-12.417-17.778-15" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+        </svg>
+        let's connect!
+    </span>
+</a>
+
+<!-- linkedin -->
+<nav id="linkedin">
+    <h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Social</h2>
+    <ul style="display:flex;gap:0.5em;list-style:none;margin:0;padding:0">
+        <li><a href="https://www.linkedin.com/in/chinmaya-rathi-794b021ba/" target="_blank" rel="noreferrer" style="display:block">
+            <svg width="227" height="214" viewBox="0 0 227 214" fill="none" style="width:2em;height:1.625em">
+                <path d="M219 201c0-41.993 2-82.591 2-124.444 0-15.474 1.406-31.727-1.889-46.556-3.894-17.52-18.025-19-34.111-19-41.388 0-82.275-6-123.556-6C47.702 5 36.51 6.331 24 9.111c-9.274 2.06-11.008 2.202-14 11.778C7.963 27.407 9 35.213 9 42v110c0 9.029-1.657 18.799 2.444 27 3.111 6.222 6.673 12.012 10 18 6.427 11.568 22.114 12 33.556 12h47c15.447 0 30.892-6 46-6 10.854 0 21.995-4 33-4 7.404 0 33.435 3.695 36-4" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+                <path d="M79 69c-6.278 0-25.416 3.544-27.889-5.111-2.633-9.218 4.257-18.367 10.334-24.445C76.655 24.234 97.292 57.854 79 67M79 93c-5.286 0-23.302-2.357-22.111 3 2.014 9.068.11 20.578.11 29.889C57 132.696 46.48 177 54 177c4.868 0 21.099 2.431 23.445-2 5.014-9.47 5.004-21.52 5.556-32 .48-9.129 6-16.542 6-26 0-9.357-2.149-14.296-6-22M99 175c0-23.994-3.276-51.754 1.889-75 1.628-7.326 5.508-19.268 16.111-14.556 2.882 1.281 8.558 3.225 10.445 5.112 4.549 4.55.929 6.375 4.555 3.555 11.845-9.213 36.085-12.915 47.445-1.555 1.427 1.427 3.437 8.433 3.555 10.444.388 6.588 2.529 10.879 3.889 17 1.058 4.761 2.953 9.286 4 14 .819 3.684-1.823 11.582.556 14.556C194.531 152.413 195 171.397 195 177c0 11.975-10.995 8-21 8-6.795 0-3-1.884-3-7v-15c0-11.719-5.595-18.679-7.889-29-1.18-5.314-11.104-20.759-18.111-12-2.627 3.284-6 7.525-6 12 0 5.945-3.393 9.541-4 15-.306 2.761-1.912 27.546-3.111 27.889-8.216 2.347-20.311.111-28.889.111" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+                <path d="M35 154c0-13.946-.898-28.325 1.056-42C36.864 106.335 40 101.567 40 95.667c0-4.83 3.9.752 4.5 1.833 1.32 2.376.5 6.86.5 9.5v21.444c0 6.131.36 12.421 0 18.556-.088 1.49-.853 7.427-2 8" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>
+            </svg>
+            <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">LinkedIn</span>
+        </a></li>
+    </ul>
+</nav>
+
+
+<!-- scene -->
+<div id="scene">
+
+    <!-- brushstrokes & ambient illustration layer -->
+    <svg id="strokes" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice"
+         xmlns="http://www.w3.org/2000/svg"
+         style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" aria-hidden="true">
+
+        <defs>
+            <!-- hand-painted wobble — moderate so shapes stay readable -->
+            <filter id="roughen" x="-14%" y="-14%" width="128%" height="128%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="4" seed="7" result="noise"/>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="13"
+                                   xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+        </defs>
+
+        <!-- ══ △ TRIANGLES — PlayStation green #2EBF90 ══ -->
+        <g stroke="#2EBF90" fill="none" stroke-linecap="round" stroke-linejoin="round"
+           filter="url(#roughen)" opacity="0.88">
+            <!-- Huge, left edge — bleeds left, anchors scene -->
+            <polygon points="-105,622 258,622 76,112" stroke-width="38"/>
+            <!-- Large, right-center -->
+            <polygon points="912,455 1182,455 1047,178" stroke-width="28"/>
+            <!-- Medium, upper-centre, bleeds top -->
+            <polygon points="528,218 735,218 631,8"    stroke-width="22"/>
+            <!-- Small, lower-right corner, bleeds bottom -->
+            <polygon points="1195,930 1435,930 1315,705" stroke-width="17"/>
+        </g>
+
+        <!-- ══ ○ CIRCLES — PlayStation red #D4293B ══ -->
+        <g stroke="#D4293B" fill="none" filter="url(#roughen)" opacity="0.88">
+            <!-- Huge, top-right corner — bleeds both edges -->
+            <circle cx="1452" cy="-15" r="272" stroke-width="36"/>
+            <!-- Large, left edge — bleeds left -->
+            <circle cx="62"   cy="455" r="158" stroke-width="28"/>
+            <!-- Medium, bottom-centre — bleeds bottom -->
+            <circle cx="720"  cy="900" r="118" stroke-width="22"/>
+            <!-- Small, upper-centre-left floating -->
+            <circle cx="405"  cy="115" r="64"  stroke-width="17"/>
+        </g>
+
+        <!-- ══ □ SQUARES — PlayStation pink #D640B2 ══ -->
+        <g stroke="#D640B2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+           filter="url(#roughen)" opacity="0.88">
+            <!-- Huge, bottom-left — bleeds left + bottom -->
+            <rect x="-98"  y="652" width="308" height="308" rx="12" stroke-width="36"/>
+            <!-- Large, upper-right quadrant -->
+            <rect x="1085" y="22"  width="235" height="235" rx="9"  stroke-width="28"/>
+            <!-- Medium, centre-left -->
+            <rect x="232"  y="338" width="152" height="152" rx="7"  stroke-width="22"/>
+            <!-- Small, right edge — bleeds right -->
+            <rect x="1382" y="412" width="98"  height="98"  rx="5"  stroke-width="17"/>
+        </g>
+
+        <!-- ══ × CROSS — PlayStation blue #2B62D9 ══ -->
+        <g stroke="#2B62D9" fill="none" stroke-linecap="round" filter="url(#roughen)" opacity="0.88">
+            <!-- Huge X, bottom-right — bleeds right + bottom -->
+            <line x1="1258" y1="645" x2="1562" y2="948" stroke-width="38"/>
+            <line x1="1562" y1="645" x2="1258" y2="948" stroke-width="38"/>
+            <!-- Large X, upper-left -->
+            <line x1="82"   y1="78"  x2="315"  y2="312" stroke-width="28"/>
+            <line x1="315"  y1="78"  x2="82"   y2="312" stroke-width="28"/>
+            <!-- Medium X, centre -->
+            <line x1="642"  y1="378" x2="835"  y2="568" stroke-width="22"/>
+            <line x1="835"  y1="378" x2="642"  y2="568" stroke-width="22"/>
+            <!-- Small X, right-centre-top -->
+            <line x1="1162" y1="295" x2="1282" y2="415" stroke-width="17"/>
+            <line x1="1282" y1="295" x2="1162" y2="415" stroke-width="17"/>
+        </g>
+    </svg>
+
+    <!-- ── LAPTOP (→ about) ── -->
+    <div class="obj" id="laptop-obj" onclick="openPanel('about')"
+         role="button" tabindex="0" aria-label="About Chinmaya"
+         onkeydown="if(event.key==='Enter')openPanel('about')">
+        <svg viewBox="0 0 380 310" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+            <defs>
+                <filter id="kid-l" x="-25%" y="-25%" width="150%" height="150%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" seed="11" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <filter id="kid-lf" x="-25%" y="-25%" width="150%" height="150%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" seed="37" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+            </defs>
+            <!-- 3D right face — shows the CRT's thick body depth -->
+            <path d="M308,0 L354,38 L354,293 L308,255 Z" fill="#c97b00" filter="url(#kid-lf)"/>
+            <!-- 3D bottom face -->
+            <path d="M0,255 L46,293 L354,293 L308,255 Z" fill="#d98e00" filter="url(#kid-lf)"/>
+            <!-- stand 3D depth shadow -->
+            <rect x="84" y="261" width="164" height="26" rx="8" fill="#c97b00" filter="url(#kid-lf)"/>
+            <!-- housing fill — oversized for color bleed -->
+            <rect x="-14" y="-10" width="340" height="280" rx="18" fill="#ffe84c" filter="url(#kid-lf)"/>
+            <!-- housing outline — wobbly -->
+            <rect x="0" y="0" width="308" height="255" rx="14" fill="none" stroke="#ff4db3" stroke-width="13" filter="url(#kid-l)"/>
+            <!-- tilt stand fill + outline -->
+            <rect x="72" y="251" width="164" height="26" rx="8" fill="#ffe84c" filter="url(#kid-lf)"/>
+            <rect x="72" y="251" width="164" height="26" rx="8" fill="none" stroke="#ff4db3" stroke-width="9" filter="url(#kid-l)"/>
+            <!-- screen bezel — dark recessed surround -->
+            <rect x="22" y="20" width="264" height="212" rx="5" fill="#111" filter="url(#kid-lf)"/>
+            <!-- screen glass — blue CRT glow, oversized for bleed -->
+            <rect x="28" y="26" width="252" height="200" rx="4" fill="#2222cc" filter="url(#kid-lf)"/>
+            <!-- screen text — no filter -->
+            <text x="50" y="86" fill="white" font-family="Roboto Mono, monospace" font-size="21" font-weight="300">I'm Chinmaya!</text>
+            <text y="118" fill="white" font-family="Roboto Mono, monospace" font-size="21" font-weight="300">
+                <tspan x="50">I study culture.</tspan><tspan id="cursor-char">_</tspan>
+            </text>
+            <rect x="48" y="145" width="212" height="52" rx="2" fill="none" stroke="white" stroke-width="2.5"/>
+            <text x="64" y="180" fill="white" font-family="Roboto Mono, monospace" font-size="17" font-weight="400" letter-spacing="1">ABOUT_CHINMAYA</text>
+            <!-- power LED on front bezel -->
+            <circle cx="274" cy="234" r="9" fill="#333" filter="url(#kid-l)"/>
+            <circle cx="274" cy="234" r="5" fill="#3dce48"/>
+            <!-- ventilation slots on top bezel -->
+            <line x1="78" y1="6" x2="222" y2="6" stroke="#ff4db3" stroke-width="3" stroke-linecap="round" filter="url(#kid-l)" opacity="0.5"/>
+            <line x1="78" y1="12" x2="222" y2="12" stroke="#ff4db3" stroke-width="3" stroke-linecap="round" filter="url(#kid-l)" opacity="0.35"/>
+            <!-- spill blobs outside viewBox -->
+            <ellipse cx="364" cy="12" rx="30" ry="22" fill="#4fd8e8" filter="url(#kid-l)" opacity="0.8"/>
+            <ellipse cx="-14" cy="48" rx="26" ry="18" fill="#3dce48" filter="url(#kid-l)" opacity="0.65"/>
+            <ellipse cx="360" cy="298" rx="22" ry="16" fill="#ffe84c" filter="url(#kid-l)" opacity="0.7"/>
+            <path d="M-18,218 C-4,202 9,218 -3,240 C-14,256 -30,240 -18,218Z" fill="#ff4db3" filter="url(#kid-l)" opacity="0.55"/>
+        </svg>
+    </div>
+
+    <!-- ── DIGITAL DIARY (→ about) ── -->
+    <div class="obj" id="diary-obj" onclick="window.open('https://www.instagram.com/chikabrgr/','_blank')"
+         role="button" tabindex="0" aria-label="Digital Diary — Instagram"
+         onkeydown="if(event.key==='Enter')window.open('https://www.instagram.com/chikabrgr/','_blank')">
+        <svg viewBox="0 0 210 270" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+            <defs>
+                <filter id="kid-d" x="-25%" y="-25%" width="150%" height="150%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="19" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <filter id="kid-df" x="-25%" y="-25%" width="150%" height="150%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="41" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+            </defs>
+            <!-- 3D depth shadow — dark offset behind the whole book -->
+            <rect x="24" y="20" width="186" height="256" rx="8" fill="#1e0a04" filter="url(#kid-df)"/>
+            <!-- page edge (right-side visible pages — 3D thickness) -->
+            <rect x="190" y="8" width="18" height="256" rx="3" fill="#ede8de" filter="url(#kid-df)"/>
+            <!-- brown cover fill — oversized for bleed -->
+            <rect x="2" y="-8" width="200" height="284" rx="10" fill="#5c3310" filter="url(#kid-df)"/>
+            <!-- cover outline — wobbly thick -->
+            <rect x="12" y="8" width="186" height="256" rx="6" fill="none" stroke="#2e1a08" stroke-width="12" filter="url(#kid-d)"/>
+            <!-- spine fill — oversized -->
+            <rect x="6" y="2" width="42" height="268" rx="7" fill="#3d2208" filter="url(#kid-df)"/>
+            <!-- orange spill blob top-right, outside viewBox -->
+            <ellipse cx="220" cy="22" rx="26" ry="20" fill="#ff6b35" filter="url(#kid-d)" opacity="0.75"/>
+            <!-- yellow blob bottom-left, outside viewBox -->
+            <ellipse cx="-10" cy="260" rx="24" ry="18" fill="#ffe84c" filter="url(#kid-d)" opacity="0.65"/>
+            <!-- teal blob top-left, outside viewBox -->
+            <ellipse cx="-8" cy="18" rx="22" ry="16" fill="#4fd8e8" filter="url(#kid-d)" opacity="0.6"/>
+            <!-- spine seam -->
+            <line x1="46" y1="8" x2="46" y2="264" stroke="#2e1a08" stroke-width="3" opacity="0.5" filter="url(#kid-d)"/>
+            <!-- cover texture grain -->
+            <line x1="48" y1="52" x2="190" y2="50" stroke="#4a2a0e" stroke-width="2.5" opacity="0.35" filter="url(#kid-d)"/>
+            <line x1="50" y1="78" x2="188" y2="76" stroke="#4a2a0e" stroke-width="2.5" opacity="0.28" filter="url(#kid-d)"/>
+            <!-- bookmark — wobbly -->
+            <rect x="154" y="1" width="16" height="42" rx="3" fill="#ff4db3" filter="url(#kid-d)"/>
+            <path d="M 154,43 L 162,55 L 170,43" fill="#ff4db3" filter="url(#kid-d)"/>
+            <!-- text — no filter -->
+            <text x="118" y="156" text-anchor="middle" fill="#f5ede0"
+                  font-family="Caveat, cursive" font-size="30" font-weight="700">DIGITAL</text>
+            <text x="118" y="192" text-anchor="middle" fill="#f5ede0"
+                  font-family="Caveat, cursive" font-size="30" font-weight="700">DIARY</text>
+        </svg>
+    </div>
+
+    <!-- ── WHITEBOARD EASEL (→ projects) ── -->
+    <div class="obj" id="easel-obj" onclick="openPanel('projects')"
+         role="button" tabindex="0" aria-label="Projects"
+         onkeydown="if(event.key==='Enter')openPanel('projects')">
+        <svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+            <defs>
+                <filter id="kid-e" x="-25%" y="-25%" width="150%" height="150%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="29" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="25" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <filter id="kid-ef" x="-25%" y="-25%" width="150%" height="150%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="53" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="25" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+            </defs>
+            <!-- board 3D depth shadow — dark gray offset -->
+            <rect x="26" y="20" width="248" height="184" rx="9" fill="#333" filter="url(#kid-ef)"/>
+            <!-- chalk tray 3D depth shadow -->
+            <rect x="26" y="191" width="248" height="14" rx="3" fill="#888" filter="url(#kid-ef)"/>
+            <!-- pink spill blob behind board -->
+            <rect x="-10" y="-8" width="282" height="208" rx="12" fill="#ff4db3" filter="url(#kid-ef)" opacity="0.45"/>
+            <!-- white board fill — slightly oversized -->
+            <rect x="6" y="2" width="260" height="196" rx="9" fill="#fefefe" filter="url(#kid-ef)"/>
+            <!-- board outline — wobbly thick -->
+            <rect x="12" y="8" width="248" height="184" rx="7" fill="none" stroke="#1a1a1a" stroke-width="12" filter="url(#kid-e)"/>
+            <!-- chalk tray fill -->
+            <rect x="6" y="175" width="260" height="22" rx="4" fill="#d8d5cc" filter="url(#kid-ef)"/>
+            <!-- chalk tray outline — wobbly -->
+            <rect x="12" y="179" width="248" height="14" rx="3" fill="none" stroke="#1a1a1a" stroke-width="9" filter="url(#kid-e)"/>
+            <!-- "projects" text — no filter -->
+            <text x="136" y="118" text-anchor="middle" fill="#e03030"
+                  font-family="Caveat, cursive" font-size="62" font-weight="700"
+                  transform="rotate(-6, 136, 118)">projects</text>
+            <!-- left front leg — wobbly thick -->
+            <line x1="68" y1="193" x2="22" y2="315" stroke="#8B6520" stroke-width="18" stroke-linecap="round" filter="url(#kid-e)"/>
+            <!-- right front leg — wobbly thick -->
+            <line x1="196" y1="193" x2="244" y2="315" stroke="#8B6520" stroke-width="18" stroke-linecap="round" filter="url(#kid-e)"/>
+            <!-- back support leg -->
+            <line x1="136" y1="193" x2="134" y2="315" stroke="#6e5018" stroke-width="13" stroke-linecap="round" filter="url(#kid-e)"/>
+            <!-- crossbar -->
+            <line x1="38" y1="260" x2="228" y2="264" stroke="#8B6520" stroke-width="10" stroke-linecap="round" filter="url(#kid-e)"/>
+            <!-- top pegs — wobbly -->
+            <rect x="97" y="1" width="22" height="12" rx="4" fill="#1a1a1a" filter="url(#kid-e)"/>
+            <rect x="149" y="1" width="22" height="12" rx="4" fill="#1a1a1a" filter="url(#kid-e)"/>
+            <!-- scribble blobs outside viewBox -->
+            <ellipse cx="-16" cy="178" rx="22" ry="16" fill="#3dce48" filter="url(#kid-e)" opacity="0.65"/>
+            <ellipse cx="288" cy="272" rx="24" ry="18" fill="#ffe84c" filter="url(#kid-e)" opacity="0.7"/>
+            <ellipse cx="282" cy="14" rx="26" ry="18" fill="#4fd8e8" filter="url(#kid-e)" opacity="0.6"/>
+        </svg>
+    </div>
+
+
+</div><!-- /scene -->
+
+<!-- drawing canvas -->
+<canvas id="draw-canvas" style="position:fixed;inset:0;z-index:100;pointer-events:none;" aria-hidden="true"></canvas>
+
+<!-- ══ ABOUT PANEL ══ -->
+<div class="panel" id="panel-about" role="dialog" aria-modal="true" aria-label="About Chinmaya">
+
+    <!-- top-right back-to-menu -->
+    <button class="about-back-btn" onclick="closePanel('about')">BACK_TO_MENU</button>
+
+    <!-- monitor stage: SVG monitor body + HTML window overlay over the blue "screen" -->
+    <div class="about-stage">
+        <svg class="about-monitor" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+                <filter id="kid-mon" x="-15%" y="-15%" width="130%" height="130%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="23" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <filter id="kid-mon-f" x="-15%" y="-15%" width="130%" height="130%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.010" numOctaves="2" seed="47" result="n"/>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+            </defs>
+
+            <!-- frame 1: stand (drawn behind) -->
+            <g class="mon-piece mon-stand-grp">
+                <rect x="346" y="634" width="320" height="46" rx="11" fill="#c97b00" filter="url(#kid-mon-f)"/>
+                <rect x="340" y="628" width="320" height="44" rx="10" fill="#faff00" filter="url(#kid-mon-f)"/>
+                <rect x="340" y="628" width="320" height="44" rx="10" fill="none" stroke="#ff00d6" stroke-width="10" filter="url(#kid-mon)"/>
+                <rect x="460" y="578" width="80" height="56" fill="#faff00" filter="url(#kid-mon-f)"/>
+                <rect x="460" y="578" width="80" height="56" fill="none" stroke="#ff00d6" stroke-width="9" filter="url(#kid-mon)"/>
+            </g>
+
+            <!-- frame 2: housing (3D depth + yellow body + wobbly pink outline) -->
+            <g class="mon-piece mon-housing-grp">
+                <path d="M 975,30 L 1000,55 L 1000,560 L 975,540 Z" fill="#c97b00" filter="url(#kid-mon-f)"/>
+                <path d="M 25,560 L 50,590 L 1000,590 L 975,560 Z" fill="#d98e00" filter="url(#kid-mon-f)"/>
+                <rect x="-12" y="-10" width="998" height="572" rx="34" fill="#faff00" filter="url(#kid-mon-f)"/>
+                <rect x="20" y="20" width="955" height="540" rx="22" fill="none" stroke="#ff00d6" stroke-width="14" filter="url(#kid-mon)"/>
+            </g>
+
+            <!-- frame 3: ventilation slots -->
+            <g class="mon-piece mon-vent-grp">
+                <line x1="220" y1="44" x2="780" y2="44" stroke="#ff00d6" stroke-width="3.5" stroke-linecap="round" filter="url(#kid-mon)" opacity="0.55"/>
+                <line x1="220" y1="56" x2="780" y2="56" stroke="#ff00d6" stroke-width="3.5" stroke-linecap="round" filter="url(#kid-mon)" opacity="0.4"/>
+            </g>
+
+            <!-- frame 4: dark recessed bezel -->
+            <g class="mon-piece mon-bezel-grp">
+                <rect x="70" y="80" width="860" height="455" rx="8" fill="#0a0a0a" filter="url(#kid-mon-f)"/>
+            </g>
+
+            <!-- frame 5: deep blue CRT screen -->
+            <g class="mon-piece mon-screen-grp">
+                <rect x="85" y="92" width="830" height="430" rx="5" fill="#001afa" filter="url(#kid-mon-f)"/>
+            </g>
+
+            <!-- frame 6: power LED (blinks on) -->
+            <g class="mon-piece mon-led-grp">
+                <circle cx="895" cy="555" r="11" fill="#222" filter="url(#kid-mon)"/>
+                <circle cx="895" cy="555" r="6" fill="#11ff00"/>
+            </g>
+        </svg>
+
+        <!-- HTML windows on top of the blue screen -->
+        <div class="about-screen-overlay">
+
+            <!-- main text window: Chinmaya.exe -->
+            <div class="about-text-win">
+                <div class="about-tb about-tb-pink">
+                    <span class="about-tb-label">Chinmaya.exe</span>
+                    <span class="about-tb-sqbtn"></span>
+                </div>
+                <div class="about-text-body">
+                    <p>I am a freelance growth strategist that can make strangers come to you at a cafe and ask <em>"you're that guy right?"</em></p>
+                    <p>Together let's grow your brand — starting with you.</p>
+                    <button class="about-cta"
+                            onclick="window.open('https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME','_blank')">let's grow!</button>
+                </div>
+            </div>
+
+            <!-- image window: chinmaya.jpg -->
+            <div class="about-image-win">
+                <div class="about-tb about-tb-yellow">
+                    <span class="about-tb-label">chinmaya.jpg</span>
+                    <span class="about-tb-sqbtn"></span>
+                </div>
+                <div class="about-image-body">
+                    <img src="chinmaya.png" alt="Chinmaya Rathi"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ══ PROJECTS PANEL ══ -->
+<div class="panel" id="panel-projects" role="dialog" aria-modal="true" aria-label="Projects">
+    <div class="wb-card">
+        <!-- child-drawn border: actual wobbly bezier paths, no filter -->
+        <svg class="wb-border-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M 2,4 C 18,2 42,5 62,3 C 78,2 90,4 98,3"                  stroke="#1a1a1a" stroke-width="9" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M 98,3 C 100,22 97,46 99,66 C 100,80 98,91 98,97"          stroke="#1a1a1a" stroke-width="9" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M 98,97 C 80,99 58,96 38,98 C 20,100 9,97 2,98"            stroke="#1a1a1a" stroke-width="9" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <path d="M 2,98 C 0,80 3,58 1,38 C 0,20 2,9 2,4"                   stroke="#1a1a1a" stroke-width="9" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        </svg>
+
+        <button class="wb-close" onclick="closePanel('projects')" aria-label="Close">
+            <svg width="46" height="46" viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg">
+                <!-- red fill -->
+                <rect x="3" y="3" width="40" height="40" fill="#e02020"/>
+                <!-- wobbly outline — each side a separate wobbly path -->
+                <path d="M 3,5 C 14,3 28,6 43,4"         stroke="#1a1a1a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <path d="M 43,4 C 44,16 42,30 44,42"      stroke="#1a1a1a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <path d="M 44,42 C 32,44 18,42 3,43"      stroke="#1a1a1a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <path d="M 3,43 C 2,31 4,17 3,5"          stroke="#1a1a1a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                <!-- scrawled X — two wobbly strokes -->
+                <path d="M 13,14 C 17,18 21,22 26,27 C 29,30 31,31 34,34" stroke="#1a1a1a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+                <path d="M 33,13 C 29,17 25,22 21,26 C 18,29 15,31 12,34" stroke="#1a1a1a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        <!-- marker-writing title -->
+        <svg class="wb-title-svg" viewBox="0 0 900 100" xmlns="http://www.w3.org/2000/svg" aria-label="what i've built">
+            <defs>
+                <clipPath id="write-clip">
+                    <rect id="write-rect" x="0" y="-10" width="0" height="120"/>
+                </clipPath>
+            </defs>
+            <text x="6" y="84" font-family="Caveat, cursive" font-size="84" font-weight="700"
+                  fill="#1a1a1a" clip-path="url(#write-clip)">what i've built</text>
+            <circle id="write-nib" cx="6" cy="60" r="5" fill="#1a1a1a" opacity="0"/>
+        </svg>
+
+        <div class="wb-board">
+            <div class="wb-item" style="--r:-1.8deg;--x:1%">
+                <div class="wb-name">Culture Report 2025</div>
+                <div class="wb-desc">Annual deep dive into trends shaping digital culture in South Asia</div>
+            </div>
+            <div class="wb-item" style="--r:1.2deg;--x:4%">
+                <div class="wb-name">D2C Growth Sprint</div>
+                <div class="wb-desc">90-day experiment → 3× organic reach · 40% lift in engagement</div>
+            </div>
+            <div class="wb-item" style="--r:-0.8deg;--x:2%">
+                <div class="wb-name">Internet Language Lab</div>
+                <div class="wb-desc">How slang, memes & micro-communities shape mass culture</div>
+            </div>
+            <div class="wb-item" style="--r:1.6deg;--x:5%">
+                <div class="wb-name">Gen Z Trend Tracker</div>
+                <div class="wb-desc">Weekly trend intelligence newsletter · 2,000+ subscribers</div>
+            </div>
+            <div class="wb-item" style="--r:-1.2deg;--x:3%">
+                <div class="wb-name">Project Five</div>
+                <div class="wb-desc">Coming soon</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ CONTACT PANEL ══ -->
+<div class="panel" id="panel-contact" role="dialog" aria-modal="true" aria-label="Contact">
+    <div class="panel-inner">
+        <div class="panel-nav">
+            <button class="panel-back" onclick="closePanel('contact')" aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M 3.5,3.8 C 9.2,9.8 15.2,15.5 20.5,20.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 20.5,3.5 C 15,9.2 9,15.2 3.5,20.8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="panel-title">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0">
+                <path d="M 2.5,3.8 Q 2.5,2 4.2,2 L 20,2 Q 21.5,2 21.5,3.8 L 21.5,14.5 Q 21.5,16 20,16 L 8.5,16 L 4.8,21.5 L 5.2,16 Q 2.5,16 2.5,14.5 Z" stroke="#FF3FCC" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="8.5" cy="9.2" r="1.5" fill="#FF3FCC"/>
+                <circle cx="12.5" cy="9" r="1.5" fill="#FF3FCC"/>
+                <circle cx="16.5" cy="9.2" r="1.5" fill="#FF3FCC"/>
+            </svg>
+            Say hi!
+        </div>
+        <div class="panel-body">
+            <p>Whether you're working on something interesting, want to talk culture and strategy, or just want to connect — I'm always up for a good conversation.</p>
+            <div class="contact-wrap">
+                <div class="field">
+                    <label>your name</label>
+                    <input type="text" placeholder="how should I call you?">
+                </div>
+                <div class="field">
+                    <label>your email</label>
+                    <input type="email" placeholder="where can I write back?">
+                </div>
+                <div class="field">
+                    <label>message</label>
+                    <textarea placeholder="what's on your mind?"></textarea>
+                </div>
+                <button class="btn-send">send it →</button>
+            </div>
+            <div class="contact-alt">
+                <p>Or reach me at <a href="mailto:rathichinmaya2002@gmail.com">rathichinmaya2002@gmail.com</a> or on <a href="https://www.linkedin.com/in/chinmaya-rathi-794b021ba/" target="_blank" rel="noopener">LinkedIn</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    /* ── concentric oval background text (Canvas — positions pre-computed, no SVG layout cost) ── */
+    (function () {
+        const QUOTE = "We can't always fight nature, John. We can't fight change. We can't fight gravity. We can't fight nothing. My whole life, all I ever did was fight. — But I can't give up, neither. I can't fight my own nature. That's the paradox, John. You see?  ";
+        const CHAR_W  = 7;       // px between chars (11px monospace ~6.6px + gap)
+        const RING_GAP = 60;     // px between rings
+        const FONT    = '11px "Roboto Mono", monospace';
+        const FRAME_MS = 1000 / 20; // throttle bg to 20fps
+
+        const canvas = document.getElementById('bg-text');
+        const ctx    = canvas.getContext('2d');
+        let rings = [], lastTs = 0;
+
+        // Pre-compute {x, y, cos, sin} for every character slot on one ellipse
+        function ellipsePositions(cx, cy, rx, ry) {
+            const pts = [], STEPS = 2400, dt = (Math.PI * 2) / STEPS;
+            let arc = 0;
+            for (let i = 1; i <= STEPS; i++) {
+                const t = i * dt, tp = (i - 1) * dt;
+                arc += Math.hypot(rx * (Math.cos(t) - Math.cos(tp)),
+                                  ry * (Math.sin(t) - Math.sin(tp)));
+                while (arc >= CHAR_W) {
+                    const a = Math.atan2(ry * Math.cos(t), -rx * Math.sin(t));
+                    pts.push({ x: cx + rx * Math.cos(t), y: cy + ry * Math.sin(t),
+                                cos: Math.cos(a), sin: Math.sin(a) });
+                    arc -= CHAR_W;
+                }
+            }
+            return pts;
+        }
+
+        function buildRings() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const cx = canvas.width / 2, cy = canvas.height / 2;
+            const aspect = canvas.height / canvas.width;
+            const maxRx  = Math.hypot(cx, cy / aspect) + RING_GAP * 2;
+            rings = [];
+            for (let rx = RING_GAP * 0.55, idx = 0; rx <= maxRx; rx += RING_GAP, idx++) {
+                rings.push({
+                    pts: ellipsePositions(cx, cy, rx, rx * aspect),
+                    dir: idx % 2 === 0 ? 1 : -1,
+                    spd: 2.5 + idx * 0.15,   // chars/sec
+                    off: Math.random() * QUOTE.length
+                });
+            }
+        }
+
+        let bgTextColor = 'rgba(255,255,255,0.055)';
+
+        function draw(ts) {
+            requestAnimationFrame(draw);
+            if (ts - lastTs < FRAME_MS) return;
+            const dt = Math.min(ts - lastTs, 200) / 1000;
+            lastTs = ts;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = FONT;
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = bgTextColor;
+
+            const qLen = QUOTE.length;
+            rings.forEach(r => {
+                r.off = ((r.off + r.spd * r.dir * dt) % qLen + qLen) % qLen;
+                const base = Math.floor(r.off);
+                r.pts.forEach((p, i) => {
+                    const ch = QUOTE[(base + i) % qLen];
+                    ctx.setTransform(p.cos, p.sin, -p.sin, p.cos, p.x, p.y);
+                    ctx.fillText(ch, 0, 0);
+                });
+            });
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        buildRings();
+        window.addEventListener('resize', buildRings);
+        requestAnimationFrame(draw);
+    })();
+
+    /* ── cursor blink ── */
+    const cursorEl = document.getElementById('cursor-char');
+    let cursorOn = true;
+    setInterval(() => {
+        if (cursorEl) cursorEl.style.visibility = (cursorOn = !cursorOn) ? 'visible' : 'hidden';
+    }, 540);
+
+    /* ── panels ── */
+    function openPanel(name) {
+        const panel = document.getElementById('panel-' + name);
+        panel.classList.add('open');
+        panel.focus();
+        if (name === 'projects') setTimeout(animateWbTitle, 520);
+    }
+
+    function closePanel(name) {
+        document.getElementById('panel-' + name).classList.remove('open');
+        if (name === 'projects') resetWbTitle();
+    }
+
+    function animateWbTitle() {
+        const rect = document.getElementById('write-rect');
+        const nib  = document.getElementById('write-nib');
+        if (!rect || !nib) return;
+        const maxW = 900, dur = 1900;
+        let start = null;
+        nib.setAttribute('opacity', '1');
+        function step(ts) {
+            if (!start) start = ts;
+            const p = Math.min((ts - start) / dur, 1);
+            const e = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2, 2) / 2;
+            const w = e * maxW;
+            rect.setAttribute('width', w);
+            nib.setAttribute('cx', 6 + w);
+            if (p < 1) requestAnimationFrame(step);
+            else nib.setAttribute('opacity', '0');
+        }
+        requestAnimationFrame(step);
+    }
+
+    function resetWbTitle() {
+        const rect = document.getElementById('write-rect');
+        const nib  = document.getElementById('write-nib');
+        if (rect) rect.setAttribute('width', '0');
+        if (nib)  { nib.setAttribute('opacity', '0'); nib.setAttribute('cx', '6'); }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.panel.open').forEach(p => {
+                closePanel(p.id.replace('panel-', ''));
+            });
+        }
+    });
+
+    /* ── cursor tracking ── */
+    const cursorDiv  = document.getElementById('custom-cursor');
+    const crayonSvgEl = document.getElementById('crayon-svg');
+    let crayonAngle = -35;
+    let prevCursorX = window.innerWidth / 2;
+
+    /* ── 3D inverted parallax via rAF ──
+       Background strokes move WITH the mouse (shallow depth).
+       Foreground icons move AGAINST the mouse (inverted, deeper depth).
+       Each icon has a different depth + its own floating oscillation.
+       This creates the illusion that icons are floating above the background.
+    */
+    const laptopEl   = document.getElementById('laptop-obj');
+    const diaryEl    = document.getElementById('diary-obj');
+    const easelEl    = document.getElementById('easel-obj');
+    const strokesSvg = document.getElementById('strokes');
+
+    // Per-object config: floatAmp (px), floatPeriod (s), phase offset (rad),
+    // depth (inverted px — larger = more 3D pop), base rotation (deg), rotation amplitude
+    const objects = [
+        { el: laptopEl, amp: 10, period: 6.5, phase: 0,   depth: 20, rotBase: -0.5, rotAmp: 1.2, isVertCentered: true  },
+        { el: diaryEl,  amp: 8,  period: 7.2, phase: 2.1, depth: 30, rotBase: 3.5,  rotAmp: 1.6, isVertCentered: false },
+        { el: easelEl,  amp: 7,  period: 8.0, phase: 4.3, depth: 25, rotBase: -1.2, rotAmp: 1.3, isVertCentered: false },
+    ];
+
+    const BG_DEPTH = 8; // brushstrokes move WITH mouse at this strength
+
+    let mouseX = window.innerWidth  / 2;
+    let mouseY = window.innerHeight / 2;
+    let smoothX = mouseX;
+    let smoothY = mouseY;
+
+    document.addEventListener('mousemove', e => {
+        const vx = e.clientX - prevCursorX;
+        prevCursorX = e.clientX;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        const targetAngle = -35 + Math.max(-12, Math.min(12, vx * 1.8));
+        crayonAngle += (targetAngle - crayonAngle) * 0.12;
+        // Position div so crayon tip (bottom-center of SVG) tracks the cursor
+        if (cursorDiv) {
+            cursorDiv.style.left = (e.clientX - 16) + 'px';
+            cursorDiv.style.top  = (e.clientY - 100) + 'px';
+        }
+        if (crayonSvgEl) crayonSvgEl.style.transform = `rotate(${crayonAngle}deg)`;
+    });
+
+    function raf(timestamp) {
+        const t = timestamp / 1000;
+
+        // Exponential smoothing — feels organic, not mechanical
+        smoothX += (mouseX - smoothX) * 0.07;
+        smoothY += (mouseY - smoothY) * 0.07;
+
+        const cx  = window.innerWidth  / 2;
+        const cy  = window.innerHeight / 2;
+        const ndx = (smoothX - cx) / cx;  // -1 … 1
+        const ndy = (smoothY - cy) / cy;  // -1 … 1
+
+        // Background drifts WITH the mouse (makes foreground feel lifted)
+        strokesSvg.style.transform =
+            `translate3d(${ndx * BG_DEPTH}px, ${ndy * BG_DEPTH}px, 0)`;
+
+        objects.forEach(({ el, amp, period, phase, depth, rotBase, rotAmp, isVertCentered }) => {
+            if (el.matches(':hover')) return; // CSS handles hover state
+
+            const floatY = Math.sin((t / period) * Math.PI * 2 + phase) * amp;
+            const rot    = Math.sin((t / period) * Math.PI * 2 + phase + 0.8) * rotAmp + rotBase;
+
+            // Icons move AGAINST mouse — negative depth = inverted parallax
+            const px = ndx * -depth;
+            const py = ndy * -depth;
+
+            if (isVertCentered) {
+                // Laptop uses top:50%, so include the -50% centering in transform
+                el.style.transform =
+                    `translateY(calc(-50% + ${floatY + py}px)) translateX(${px}px) rotate(${rot}deg)`;
+            } else {
+                el.style.transform =
+                    `translate3d(${px}px, ${floatY + py}px, 0) rotate(${rot}deg)`;
+            }
+        });
+
+        requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+
+    /* ── drawing canvas ── */
+    (function () {
+        const canvas = document.getElementById('draw-canvas');
+        const ctx    = canvas.getContext('2d');
+
+        function resize() {
+            const tmp = document.createElement('canvas');
+            tmp.width  = canvas.width;
+            tmp.height = canvas.height;
+            tmp.getContext('2d').drawImage(canvas, 0, 0);
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+            ctx.drawImage(tmp, 0, 0);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        function isInteractive(el) {
+            const ids = ['laptop-obj','diary-obj','easel-obj','badge','linkedin','theme-toggle'];
+            let cur = el;
+            while (cur && cur !== document.body) {
+                if (ids.includes(cur.id)) return true;
+                if (['A','BUTTON','NAV'].includes(cur.tagName)) return true;
+                cur = cur.parentElement;
+            }
+            return false;
+        }
+
+        let drawing = false, lx = 0, ly = 0;
+
+        function crayonStroke(x1, y1, x2, y2) {
+            const dist = Math.hypot(x2 - x1, y2 - y1);
+            if (dist === 0) return;
+            const steps = Math.max(1, Math.ceil(dist / 2));
+
+            // 4 slightly jittered passes to build up the waxy, layered crayon body
+            for (let pass = 0; pass < 4; pass++) {
+                ctx.beginPath();
+                ctx.moveTo(x1 + (Math.random() - 0.5) * 2, y1 + (Math.random() - 0.5) * 2);
+                for (let i = 1; i <= steps; i++) {
+                    const t = i / steps;
+                    ctx.lineTo(
+                        x1 + (x2 - x1) * t + (Math.random() - 0.5) * 1.8,
+                        y1 + (y2 - y1) * t + (Math.random() - 0.5) * 1.8
+                    );
+                }
+                ctx.strokeStyle = `rgba(220,25,25,${0.22 + Math.random() * 0.18})`;
+                ctx.lineWidth = 4 + Math.random() * 6;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+            }
+
+            // Frayed edge particles — crayon wax crumble
+            for (let i = 0; i <= steps; i++) {
+                const t = i / steps;
+                const x = x1 + (x2 - x1) * t;
+                const y = y1 + (y2 - y1) * t;
+                for (let j = 0; j < 3; j++) {
+                    ctx.beginPath();
+                    ctx.arc(
+                        x + (Math.random() - 0.5) * 12,
+                        y + (Math.random() - 0.5) * 12,
+                        0.4 + Math.random() * 1.8, 0, Math.PI * 2
+                    );
+                    ctx.fillStyle = `rgba(220,25,25,${0.04 + Math.random() * 0.09})`;
+                    ctx.fill();
+                }
+            }
+        }
+
+        document.addEventListener('mousedown', e => {
+            if (document.querySelector('.panel.open') || isInteractive(e.target)) return;
+            drawing = true;
+            lx = e.clientX; ly = e.clientY;
+            crayonStroke(lx - 1, ly - 1, lx, ly);
+        });
+        document.addEventListener('mousemove', e => {
+            if (!drawing) return;
+            crayonStroke(lx, ly, e.clientX, e.clientY);
+            lx = e.clientX; ly = e.clientY;
+        });
+        document.addEventListener('mouseup',    () => { drawing = false; });
+        document.addEventListener('mouseleave', () => { drawing = false; });
+    })();
+</script>
+
+<!-- custom cursor -->
+<div id="custom-cursor">
+    <svg id="crayon-svg" width="32" height="100" viewBox="0 0 18 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="1" width="12" height="5" rx="2.5" fill="#ff9999"/>
+        <rect x="2" y="5" width="14" height="3.5" rx="1" fill="#c8c8c8"/>
+        <rect x="2" y="8" width="14" height="32" fill="#e02020"/>
+        <rect x="2" y="19" width="14" height="9" fill="#c01818"/>
+        <rect x="3.5" y="9" width="3.5" height="30" rx="1.5" fill="rgba(255,255,255,0.25)"/>
+        <path d="M2,40 L9,55 L16,40 Z" fill="#c89040"/>
+        <line x1="6.5" y1="42" x2="9" y2="54" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round"/>
+    </svg>
+</div>
+</body>
+</html>
