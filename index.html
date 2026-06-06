@@ -7,7 +7,7 @@
     <meta name="description" content="Growth Strategist and Culture Analyst. I study how culture moves.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Roboto+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Caveat:wght@400;600;700&family=Cinzel:wght@500;700&family=Comic+Neue:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Roboto+Mono:ital,wght@0,300;0,400;1,300&family=VT323&display=swap" rel="stylesheet">
 
     <style>
         /* ── tokens ── */
@@ -172,8 +172,7 @@
         }
         #custom-cursor svg {
             display: block;
-            filter: drop-shadow(rgba(255,255,255,0.4) 0px 0px 5px);
-            transform: rotate(-35deg);
+            transform: rotate(35deg);
             transform-origin: 50% 100%;
         }
 
@@ -285,6 +284,8 @@
         }
         .wb-card {
             position: relative;
+            display: flex;
+            flex-direction: column;
             width: 70vw;
             height: 72vh;
             background: #f8f8f3;
@@ -326,16 +327,22 @@
             overflow: visible;
             margin-bottom: clamp(4px, 1.2vh, 14px);
         }
-        .wb-board { padding-top: 0; }
+        .wb-board {
+            padding-top: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
         .wb-item {
             display: block;
-            margin-bottom: clamp(3px, 1vh, 12px);
+            margin-bottom: 0;
             transform: rotate(var(--r)) translateX(var(--x));
             transform-origin: left center;
         }
         .wb-name {
             font-family: var(--f-hand);
-            font-size: clamp(28px, 4vw, 58px);
+            font-size: clamp(24px, 3.4vw, 48px);
             font-weight: 700;
             color: #e02020;
             line-height: 1;
@@ -556,6 +563,264 @@
             .about-tb-label, .about-cta { font-size: 11px; }
         }
 
+        /* ════════ project pages — 90s Geocities homepage energy ════════ */
+        .wb-item { cursor: pointer; transition: transform 0.18s ease; }
+        .wb-item:hover { transform: rotate(var(--r)) translateX(var(--x)) scale(1.05); }
+
+        /* ════════ #panel-comic — pure 90s Geocities homepage ════════
+           Dark navy starfield tile, beveled white box, Comic-Sans
+           heading, marquee scroll, blinking text, rainbow rule. */
+        #panel-comic {
+            background-color: #000033;
+            /* tiled starfield: a 220×220 SVG with random scattered stars */
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><rect width='220' height='220' fill='%23000033'/><circle cx='18' cy='28' r='1' fill='white'/><circle cx='65' cy='52' r='1.5' fill='%23ffffaa'/><circle cx='112' cy='80' r='1' fill='white'/><circle cx='40' cy='110' r='1' fill='white'/><circle cx='90' cy='130' r='1.5' fill='%2380ffff'/><circle cx='195' cy='22' r='1.5' fill='white'/><circle cx='10' cy='75' r='1' fill='white'/><circle cx='170' cy='118' r='1' fill='%23ffaaff'/><circle cx='148' cy='40' r='1' fill='white'/><circle cx='80' cy='180' r='1' fill='white'/><circle cx='200' cy='190' r='1.5' fill='%23ffffaa'/><circle cx='140' cy='200' r='1' fill='white'/><circle cx='32' cy='160' r='1' fill='%2380ffff'/><circle cx='185' cy='75' r='1' fill='white'/><circle cx='55' cy='205' r='1' fill='white'/></svg>");
+            background-repeat: repeat;
+            transform: none !important;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            overflow-y: auto;
+            z-index: 600;
+            color: #000;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        #panel-comic.open { opacity: 1; pointer-events: auto; }
+
+        /* back link top-left, looks like a classic blue underlined hyperlink */
+        .r90-back {
+            position: fixed;
+            top: 14px;
+            left: 16px;
+            z-index: 30;
+            background: transparent;
+            border: none;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 22px;
+            color: #ffff66;
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 4px 8px;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .r90-back:hover { color: #ff66ff; }
+        .r90-back::before { content: "« "; }
+        .r90-back::after  { content: " «"; }
+
+        /* TOP MARQUEE BAR — magenta/yellow border, scrolling pixel text */
+        .r90-marquee-bar {
+            background: #ff00ff;
+            border-top: 4px solid #ffff00;
+            border-bottom: 4px solid #ffff00;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 6px 0;
+            margin: 60px 0 28px;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 24px;
+            color: #ffffff;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .r90-marquee {
+            display: inline-block;
+            padding-left: 100%;     /* start fully off-right */
+            animation: r90-scroll 22s linear infinite;
+        }
+        @keyframes r90-scroll {
+            from { transform: translateX(0);     }
+            to   { transform: translateX(-100%); }
+        }
+
+        /* THE CONTENT BOX — single beveled "text box" containing
+           heading, image, paragraph, and the work links. */
+        .r90-box {
+            max-width: 680px;
+            margin: 0 auto 40px;
+            background: #ffe9c4;
+            border: 6px outset #ffcc66;       /* classic 3D bevel */
+            padding: 26px 28px 22px;
+            box-shadow:
+                4px 4px 0 #000,
+                inset 0 0 0 2px #fff;
+        }
+
+        /* HEADING — animated rainbow gradient text in Comic-y font */
+        .r90-heading {
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+            font-weight: 700;
+            font-size: clamp(28px, 4.5vw, 44px);
+            text-align: center;
+            margin: 0 0 6px;
+            line-height: 1.15;
+            background: linear-gradient(90deg,
+                #ff0000, #ff9900, #ffff00, #33ff33,
+                #00ccff, #3333ff, #cc33ff, #ff0099, #ff0000);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-stroke: 1.5px #000;
+            paint-order: stroke fill;
+            animation: r90-rainbow-flow 4s linear infinite;
+            filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.15));
+        }
+        @keyframes r90-rainbow-flow {
+            to { background-position: -200% 0; }
+        }
+
+        /* ANIMATED RAINBOW HORIZONTAL RULE */
+        .r90-rainbow-rule {
+            height: 6px;
+            border: none;
+            background: linear-gradient(90deg,
+                #ff0000, #ff9900, #ffff00, #33ff33,
+                #00ccff, #3333ff, #cc33ff, #ff0099, #ff0000);
+            background-size: 200% 100%;
+            animation: r90-rainbow-flow 3s linear infinite;
+            margin: 16px 0;
+        }
+
+        /* IMAGE — single placeholder with a thick chunky inset frame */
+        .r90-image-wrap {
+            text-align: center;
+            margin: 16px 0;
+        }
+        .r90-image {
+            display: inline-block;
+            max-width: 100%;
+            border: 5px ridge #c0c0c0;
+            background: #d0d0d0;
+            padding: 4px;
+            box-shadow: 3px 3px 0 #000;
+        }
+        .r90-image img,
+        .r90-image svg {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* THE TEXT — black Times-style, white-background readable */
+        .r90-text {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            line-height: 1.55;
+            color: #000;
+            background: #ffffff;
+            border: 2px inset #999;
+            padding: 12px 14px;
+            margin: 14px 0 18px;
+        }
+
+        /* LINKS HEADING + LIST — classic Geocities arrows */
+        .r90-links-heading {
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+            font-size: 22px;
+            color: #cc0066;
+            text-align: center;
+            margin: 16px 0 10px;
+            text-shadow: 1px 1px 0 #ffe4f1;
+        }
+        .r90-links {
+            list-style: none;
+            padding: 0;
+            margin: 0 auto;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 18px;
+            max-width: 420px;
+        }
+        .r90-links li {
+            padding: 6px 0;
+            border-bottom: 1px dotted #997744;
+        }
+        .r90-links li:last-child { border-bottom: none; }
+        .r90-links li::before {
+            content: "➤ ";
+            color: #ff0066;
+            font-weight: 700;
+            margin-right: 4px;
+        }
+        .r90-links a {
+            color: #0000ee;            /* classic unvisited blue */
+            text-decoration: underline;
+            font-weight: 700;
+        }
+        .r90-links a:hover {
+            color: #ff0000;
+            background: #ffff00;
+        }
+
+        /* FOOTER ROW: visitor counter (centered) */
+        .r90-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 18px;
+            color: #6b3300;
+            margin-top: 12px;
+        }
+        .r90-counter {
+            background: #000;
+            color: #00ff00;
+            padding: 2px 8px;
+            border: 2px inset #777;
+            font-family: 'VT323', 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        .r90-blink {
+            color: #ff0000;
+            font-weight: 700;
+            animation: r90-blink 1.06s steps(1) infinite;
+        }
+        @keyframes r90-blink {
+            50% { opacity: 0; }
+        }
+
+        /* "Best viewed in…" badge below the box */
+        .r90-stamp {
+            text-align: center;
+            margin: 0 auto 40px;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 18px;
+            color: #ffff66;
+            text-shadow: 2px 2px 0 #000;
+        }
+        .r90-stamp .web-safe {
+            display: inline-block;
+            background: linear-gradient(180deg, #c0c0c0, #888);
+            color: #000;
+            padding: 6px 18px;
+            border: 3px outset #ddd;
+            margin: 0 4px;
+            font-weight: 700;
+            font-size: 18px;
+            font-family: 'Times New Roman', Times, serif;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .r90-stamp .web-safe:hover {
+            background: linear-gradient(180deg, #ffff66, #ccaa00);
+            border-color: #ffaa00;
+        }
+        .r90-stamp .web-safe:active {
+            border-style: inset;
+        }
+
+        @media (max-width: 720px) {
+            .r90-box { margin: 0 16px 30px; padding: 18px 16px; }
+            .r90-marquee-bar { font-size: 18px; }
+            .r90-heading { font-size: 26px; }
+            .r90-footer { flex-direction: column; gap: 8px; }
+        }
+
+        /* hide global "let's connect!" + LinkedIn badges when this page is open */
+        body:has(#panel-comic.open) #badge,
+        body:has(#panel-comic.open) #linkedin {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         /* contact */
         .contact-wrap { max-width: 560px; margin-top: 20px; }
 
@@ -600,6 +865,181 @@
         .contact-alt a:hover { text-decoration: underline; }
 
         body { background: #111111; }
+
+        /* ════════════════════════════════════════════════════════════
+           MOBILE + TOUCH OPTIMIZATIONS
+           One block, scoped so desktop fidelity stays untouched.
+           ════════════════════════════════════════════════════════════ */
+
+        /* iOS / Android baseline: kill rubber-banding, lock the y-axis */
+        html, body {
+            overscroll-behavior: none;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Touch-primary devices: hide the crayon cursor and restore native pointers */
+        @media (hover: none), (pointer: coarse) {
+            * { cursor: auto !important; }
+            a, button, .obj, [role="button"], .wb-item, .about-cta, .btn-send {
+                cursor: pointer !important;
+            }
+            #custom-cursor { display: none !important; }
+        }
+
+        /* Universal tap-target sizing for chrome interactives (44×44 WCAG) */
+        @media (pointer: coarse) {
+            .panel-back,
+            .wb-close,
+            .about-back-btn,
+            .r90-back,
+            .about-cta,
+            .btn-send {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            .wb-close { padding: 8px; }
+            .r90-back { padding: 10px 12px; font-size: 20px; }
+            .about-back-btn { padding: 10px 16px; }
+        }
+
+        /* ── small viewports (≤ 768px): stack the scene, reflow the about panel ── */
+        @media (max-width: 768px) {
+            /* Let the page scroll naturally; #scene now flows in document order */
+            html, body {
+                overflow-x: hidden;
+                overflow-y: auto;
+                height: auto;
+                min-height: 100%;
+            }
+
+            /* bg-text stays fixed behind everything */
+            #bg-text { z-index: 0; }
+
+            /* Scene becomes a relative, vertically stacked column */
+            #scene {
+                position: relative;
+                inset: auto;
+                min-height: 100vh;
+                padding: 96px 18px 120px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 42px;
+                overflow: visible;
+            }
+
+            /* Background brushstrokes become a soft backdrop */
+            #strokes {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0.55;
+                z-index: 0;
+                pointer-events: none;
+                transform: none !important;  /* parallax disabled — see JS */
+            }
+
+            /* Lobby objects unhinge from absolute coords, stack in source order */
+            .obj {
+                position: relative !important;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                z-index: 2;
+                transform: none !important;  /* parallax + float disabled on touch */
+            }
+            .obj svg { transition: none; }
+            #laptop-obj { width: min(82vw, 420px); }
+            #diary-obj  { width: min(48vw, 220px); }
+            #easel-obj  { width: min(66vw, 340px); }
+
+            /* Top-left "let's connect!" + bottom-right LinkedIn — smaller scale, real hitbox */
+            #badge, #linkedin {
+                transform: scale(1.25) !important;
+                font-size: 13px !important;
+                padding: 14px 18px !important;
+                filter: drop-shadow(black 0px 0px 0.25rem);
+            }
+            #badge:hover, #linkedin:hover {
+                transform: scale(1.4) !important;
+            }
+
+            /* ── About panel: drop strict SVG aspect-ratio, stack as retro modal ── */
+            #panel-about {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                align-items: flex-start;
+            }
+            .about-back-btn { top: 14px; right: 14px; }
+            .about-stage {
+                width: 92vw;
+                max-width: 540px;
+                max-height: none;
+                aspect-ratio: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                padding: 72px 0 40px;
+                margin: 0 auto;
+            }
+            .about-monitor { display: none; }  /* hide the CRT chrome — content is the focus */
+            .about-screen-overlay {
+                position: static;
+                left: auto; top: auto;
+                width: 100%;
+                height: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 22px;
+            }
+            .about-text-win,
+            .about-image-win {
+                position: static !important;
+                left: auto !important;
+                right: auto !important;
+                top: auto !important;
+                bottom: auto !important;
+                width: 100% !important;
+                opacity: 1;            /* skip the staged pop-in on mobile — instant reveal */
+                animation: none !important;
+            }
+            .about-text-win { transform: rotate(-0.8deg); }
+            .about-image-win { transform: rotate(0.8deg); }
+            .about-text-body { font-size: 14px; padding: 18px 18px 22px; }
+            .about-tb-label { font-size: 12px; }
+            .about-cta { font-size: 13px; padding: 12px 28px; }
+
+            /* ── Whiteboard projects panel: fit small screens ── */
+            .wb-card {
+                width: 92vw;
+                height: 86vh;
+                padding: 28px 22px;
+            }
+            .wb-title-svg { height: clamp(48px, 12vw, 80px); }
+            .wb-name { font-size: clamp(22px, 7vw, 38px); }
+
+            /* ── Comic project panel: tighter padding ── */
+            .panel-inner { padding: 28px 18px; }
+            .panel-title { font-size: clamp(44px, 13vw, 72px); }
+        }
+
+        /* Touch + small screen: lighten the bg canvas so it doesn't compete with content */
+        @media (pointer: coarse) and (max-width: 768px) {
+            #bg-text { opacity: 0.72; }
+        }
+
+        /* Extra-narrow (≤ 380px) — Pixel 4a, iPhone SE — tighten more */
+        @media (max-width: 380px) {
+            #scene { padding: 80px 12px 100px; gap: 32px; }
+            #laptop-obj { width: min(88vw, 360px); }
+            #easel-obj  { width: min(72vw, 300px); }
+            .wb-card    { width: 94vw; height: 88vh; padding: 22px 16px; }
+            .about-stage { padding: 60px 0 30px; }
+        }
     </style>
 </head>
 <body>
@@ -752,11 +1192,6 @@
             <!-- ventilation slots on top bezel -->
             <line x1="78" y1="6" x2="222" y2="6" stroke="#ff4db3" stroke-width="3" stroke-linecap="round" filter="url(#kid-l)" opacity="0.5"/>
             <line x1="78" y1="12" x2="222" y2="12" stroke="#ff4db3" stroke-width="3" stroke-linecap="round" filter="url(#kid-l)" opacity="0.35"/>
-            <!-- spill blobs outside viewBox -->
-            <ellipse cx="364" cy="12" rx="30" ry="22" fill="#4fd8e8" filter="url(#kid-l)" opacity="0.8"/>
-            <ellipse cx="-14" cy="48" rx="26" ry="18" fill="#3dce48" filter="url(#kid-l)" opacity="0.65"/>
-            <ellipse cx="360" cy="298" rx="22" ry="16" fill="#ffe84c" filter="url(#kid-l)" opacity="0.7"/>
-            <path d="M-18,218 C-4,202 9,218 -3,240 C-14,256 -30,240 -18,218Z" fill="#ff4db3" filter="url(#kid-l)" opacity="0.55"/>
         </svg>
     </div>
 
@@ -785,12 +1220,6 @@
             <rect x="12" y="8" width="186" height="256" rx="6" fill="none" stroke="#2e1a08" stroke-width="12" filter="url(#kid-d)"/>
             <!-- spine fill — oversized -->
             <rect x="6" y="2" width="42" height="268" rx="7" fill="#3d2208" filter="url(#kid-df)"/>
-            <!-- orange spill blob top-right, outside viewBox -->
-            <ellipse cx="220" cy="22" rx="26" ry="20" fill="#ff6b35" filter="url(#kid-d)" opacity="0.75"/>
-            <!-- yellow blob bottom-left, outside viewBox -->
-            <ellipse cx="-10" cy="260" rx="24" ry="18" fill="#ffe84c" filter="url(#kid-d)" opacity="0.65"/>
-            <!-- teal blob top-left, outside viewBox -->
-            <ellipse cx="-8" cy="18" rx="22" ry="16" fill="#4fd8e8" filter="url(#kid-d)" opacity="0.6"/>
             <!-- spine seam -->
             <line x1="46" y1="8" x2="46" y2="264" stroke="#2e1a08" stroke-width="3" opacity="0.5" filter="url(#kid-d)"/>
             <!-- cover texture grain -->
@@ -851,10 +1280,6 @@
             <!-- top pegs — wobbly -->
             <rect x="97" y="1" width="22" height="12" rx="4" fill="#1a1a1a" filter="url(#kid-e)"/>
             <rect x="149" y="1" width="22" height="12" rx="4" fill="#1a1a1a" filter="url(#kid-e)"/>
-            <!-- scribble blobs outside viewBox -->
-            <ellipse cx="-16" cy="178" rx="22" ry="16" fill="#3dce48" filter="url(#kid-e)" opacity="0.65"/>
-            <ellipse cx="288" cy="272" rx="24" ry="18" fill="#ffe84c" filter="url(#kid-e)" opacity="0.7"/>
-            <ellipse cx="282" cy="14" rx="26" ry="18" fill="#4fd8e8" filter="url(#kid-e)" opacity="0.6"/>
         </svg>
     </div>
 
@@ -934,8 +1359,8 @@
                     <span class="about-tb-sqbtn"></span>
                 </div>
                 <div class="about-text-body">
-                    <p>I am a freelance growth strategist that can make strangers come to you at a cafe and ask <em>"you're that guy right?"</em></p>
-                    <p>Together let's grow your brand — starting with you.</p>
+                    <p>I am a freelance growth strategist specialising in consumer study and brand positioning.</p>
+                    <p>I've helped 40+ clients but every brand is unique so let's start by having a conversation about your brand!</p>
                     <button class="about-cta"
                             onclick="window.open('https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME','_blank')">let's grow!</button>
                 </div>
@@ -995,27 +1420,59 @@
         </svg>
 
         <div class="wb-board">
-            <div class="wb-item" style="--r:-1.8deg;--x:1%">
-                <div class="wb-name">Culture Report 2025</div>
-                <div class="wb-desc">Annual deep dive into trends shaping digital culture in South Asia</div>
+            <div class="wb-item" style="--r:-1.8deg;--x:4%" onclick="openProject('viral')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openProject('viral')">
+                <div class="wb-name">I made a viral game</div>
             </div>
-            <div class="wb-item" style="--r:1.2deg;--x:4%">
-                <div class="wb-name">D2C Growth Sprint</div>
-                <div class="wb-desc">90-day experiment → 3× organic reach · 40% lift in engagement</div>
+            <div class="wb-item" style="--r:1.2deg;--x:4%" onclick="openProject('openai')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openProject('openai')">
+                <div class="wb-name">When OpenAI wanted to take over the IPL</div>
             </div>
-            <div class="wb-item" style="--r:-0.8deg;--x:2%">
-                <div class="wb-name">Internet Language Lab</div>
-                <div class="wb-desc">How slang, memes & micro-communities shape mass culture</div>
+<div class="wb-item" style="--r:1.6deg;--x:5%" onclick="openProject('philips')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openProject('philips')">
+                <div class="wb-name">TV Commercial for Philips</div>
             </div>
-            <div class="wb-item" style="--r:1.6deg;--x:5%">
-                <div class="wb-name">Gen Z Trend Tracker</div>
-                <div class="wb-desc">Weekly trend intelligence newsletter · 2,000+ subscribers</div>
-            </div>
-            <div class="wb-item" style="--r:-1.2deg;--x:3%">
-                <div class="wb-name">Project Five</div>
-                <div class="wb-desc">Coming soon</div>
+            <div class="wb-item" style="--r:-1.2deg;--x:3%" onclick="openProject('rapido')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openProject('rapido')">
+                <div class="wb-name">Broke the algo w my own page</div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- ══ PROJECT PAGE — 90s Geocities homepage ══ -->
+<div class="panel" id="panel-comic" role="dialog" aria-modal="true" aria-label="Project">
+
+    <button class="r90-back" onclick="closePanel('comic')">back to home</button>
+
+    <!-- top marquee bar: scrolling pixel text -->
+    <div class="r90-marquee-bar">
+        <div class="r90-marquee" id="r90-marquee">
+            ★ ★ ★  This project was made with blood, sweat and lots of caffeine  ★ ★ ★
+        </div>
+    </div>
+
+    <!-- THE single content box: heading + image + text + links -->
+    <main class="r90-box">
+        <h1 class="r90-heading" id="r90-heading">PROJECT TITLE GOES HERE</h1>
+        <hr class="r90-rainbow-rule"/>
+
+        <div class="r90-image-wrap">
+            <span class="r90-image" id="r90-image"></span>
+        </div>
+
+        <p class="r90-text" id="r90-text">project description goes here</p>
+
+        <hr class="r90-rainbow-rule"/>
+
+        <h2 class="r90-links-heading">~ ~ ~ check out my work ~ ~ ~</h2>
+        <ul class="r90-links" id="r90-links"></ul>
+
+        <hr class="r90-rainbow-rule"/>
+
+        <div class="r90-footer">
+            <span class="r90-counter" id="r90-counter">VISITORS: 00042</span>
+        </div>
+    </main>
+
+    <div class="r90-stamp">
+        <button class="web-safe r90-next" id="r90-next" type="button">more lore</button>
     </div>
 </div>
 
@@ -1063,15 +1520,39 @@
     </div>
 </div>
 
+<!-- custom cursor — MUST live before the <script> so getElementById() can find it -->
+<div id="custom-cursor">
+    <svg id="crayon-svg" width="15" height="45" viewBox="0 0 50 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- main body + conical tip, single black-outlined red shape -->
+        <path d="M 16,5 Q 12,5 12,10 L 12,148 L 25,170 L 38,148 L 38,10 Q 38,5 34,5 Z"
+              fill="#ff1a1a" stroke="#1a0606" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <!-- top dark wavy band -->
+        <path d="M 12,24 C 16,21 19,27 23,24 C 27,21 30,27 34,24 C 37,21 38,25 38,25 L 38,36 C 35,33 31,38 27,34 C 23,31 19,37 15,34 C 13,32 12,35 12,35 Z"
+              fill="#1a0606"/>
+        <!-- bottom dark wavy band -->
+        <path d="M 12,124 C 16,121 19,127 23,124 C 27,121 30,127 34,124 C 37,121 38,125 38,125 L 38,136 C 35,133 31,138 27,134 C 23,131 19,137 15,134 C 13,132 12,135 12,135 Z"
+              fill="#1a0606"/>
+        <!-- center oval label -->
+        <ellipse cx="25" cy="82" rx="7" ry="14" fill="#1a0606"/>
+        <!-- right-side highlight -->
+        <line x1="33" y1="20" x2="33" y2="145" stroke="#ff8a8a" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+        <!-- tip darker shade -->
+        <path d="M 14,148 L 25,168 L 36,148 Z" fill="#1a0606" opacity="0.18"/>
+    </svg>
+</div>
 
 <script>
     /* ── concentric oval background text (Canvas — positions pre-computed, no SVG layout cost) ── */
     (function () {
         const QUOTE = "We can't always fight nature, John. We can't fight change. We can't fight gravity. We can't fight nothing. My whole life, all I ever did was fight. — But I can't give up, neither. I can't fight my own nature. That's the paradox, John. You see?  ";
-        const CHAR_W  = 7;       // px between chars (11px monospace ~6.6px + gap)
-        const RING_GAP = 60;     // px between rings
-        const FONT    = '11px "Roboto Mono", monospace';
-        const FRAME_MS = 1000 / 20; // throttle bg to 20fps
+        // Mobile / touch detection — used to lighten the canvas workload
+        const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches;
+        const IS_NARROW = window.innerWidth < 768;
+        const LOW_POWER = IS_TOUCH || IS_NARROW;
+        const CHAR_W   = LOW_POWER ? 9  : 7;
+        const RING_GAP = LOW_POWER ? 84 : 60;
+        const FONT     = '11px "Roboto Mono", monospace';
+        const FRAME_MS = 1000 / (LOW_POWER ? 12 : 20); // 12fps on mobile, 20fps desktop
 
         const canvas = document.getElementById('bg-text');
         const ctx    = canvas.getContext('2d');
@@ -1112,7 +1593,7 @@
             }
         }
 
-        let bgTextColor = 'rgba(255,255,255,0.055)';
+        let bgTextColor = 'rgba(255,255,255,0.22)';
 
         function draw(ts) {
             requestAnimationFrame(draw);
@@ -1191,6 +1672,114 @@
         if (nib)  { nib.setAttribute('opacity', '0'); nib.setAttribute('cx', '6'); }
     }
 
+    /* ── 90s project pages — heading, image, text, links per project ── */
+
+    /* Placeholder image used until you swap in a real screenshot.
+       It's an inline SVG (no external file) so the page works offline. */
+    const R90_PLACEHOLDER = `
+        <svg viewBox="0 0 480 270" xmlns="http://www.w3.org/2000/svg" width="480" height="270">
+            <rect width="100%" height="100%" fill="%23dadada"/>
+            <rect x="2" y="2" width="476" height="266" fill="none" stroke="%23999" stroke-width="2" stroke-dasharray="6 4"/>
+            <text x="50%" y="48%" text-anchor="middle" font-family="Courier New, monospace" font-size="20" fill="%23555">[ your screenshot here ]</text>
+            <text x="50%" y="60%" text-anchor="middle" font-family="Courier New, monospace" font-size="14" fill="%23888">480 × 270 · drop in &lt;img&gt; here</text>
+        </svg>`.replace(/\n\s+/g, '');
+
+    /* Sequence in which "more lore" cycles through projects. The last
+       entry's button shows "back to main page" and closes the panel. */
+    const PROJECT_ORDER = ['viral', 'openai', 'philips', 'rapido'];
+
+    const PROJECTS = {
+        viral: {
+            heading: "MY GAME CRASHED!",
+            text: [
+                "NYT Connections and the cultural gap that comes with it gave me an idea to make an Indian version for it. My only marketing push was a reel that got 150K views within hours.",
+                "The game gained 6K new users on its launch day and continues to have 2K returning users every day!"
+            ],
+            visitors: "10,000+",
+            links: [
+                { label: "Play game !!", url: "https://www.mimirgames.org" }
+            ]
+        },
+        openai: {
+            heading: "Comic that broke the internet!",
+            text: [
+                "ChatGPT launched image gen 2.0 and I got back to my lab thinking what it can do and what I can make a professional athlete do with it…",
+                "He plays for Bengaluru, has millions of followers and a ChatGPT paid subscription, I love Scott Pilgrim comics.",
+                "Had to make a comic book :))"
+            ],
+            visitors: "7 Million+",
+            links: [
+                { label: "See the comic",  url: "https://www.instagram.com/p/DXcDexUEZ0z/?hl=en&img_index=8" },
+                { label: "more work",      url: "https://www.instagram.com/reel/DYhTLPtPAsQ/" },
+                { label: "more work 2.0",  url: "https://www.instagram.com/reel/DXyhWP1hShf/" }
+            ]
+        },
+        philips: {
+            heading: "100 media pages and 70M people loved this",
+            text: [
+                "Understanding Gen-Z isn't easy, so Philips TV commercial project was conceptualised and researched by your's truly.",
+                "Converted the pitch, shoot got over, got 70 million + views ;)"
+            ],
+            visitors: "72 million +",
+            links: [
+                { label: "Vertical cut",   url: "https://www.instagram.com/reel/DXL___aj12c/?hl=en" },
+                { label: "Horizontal cut", url: "https://www.youtube.com/watch?v=MAJMuqm_vxQ" }
+            ]
+        },
+        rapido: {
+            heading: "Spoke my truth",
+            text: [
+                "\"I should start a podcast\" is a thought I've often had as a straight man, it's a cannon event.",
+                "Though 1 hour may be too much, I knew I could make people care about what I'm saying for 1 min at a time, and hence, I started and love started to pour (overwhelmingly).",
+                "Got 10M+ views within a span of 6 months and I'm still just out there chilling w the internet, seeing where this goes :))"
+            ],
+            visitors: "10 million +",
+            links: [
+                { label: "check this out", url: "https://www.instagram.com/chikabrgr/" }
+            ]
+        }
+    };
+
+    function openProject(key) {
+        const p = PROJECTS[key];
+        if (!p) return;
+        document.getElementById('r90-heading').textContent = p.heading;
+
+        // text can be a single string or an array of paragraphs
+        const paragraphs = Array.isArray(p.text) ? p.text : [p.text];
+        document.getElementById('r90-text').innerHTML = paragraphs
+            .map(t => `<p style="margin:0 0 10px;">${t}</p>`).join('')
+            .replace(/<p[^>]*>(\s*)<\/p>$/, '');  // trim trailing empty <p>
+
+        // Try loading projects/<key>/image.png; if it's not there yet,
+        // gracefully fall back to the dashed-border placeholder SVG.
+        const imgWrap = document.getElementById('r90-image');
+        imgWrap.innerHTML = `<img src="projects/${key}/image.png?t=${Date.now()}" alt="${p.heading}" style="max-width:100%;height:auto;display:block;">`;
+        imgWrap.querySelector('img').onerror = () => { imgWrap.innerHTML = R90_PLACEHOLDER; };
+
+        document.getElementById('r90-links').innerHTML = p.links.map(l =>
+            `<li><a href="${l.url}" target="_blank" rel="noopener">${l.label}</a></li>`
+        ).join('');
+
+        // per-project visitor count
+        document.getElementById('r90-counter').textContent =
+            'VISITORS: ' + (p.visitors || '00042');
+
+        // navigation button: first 3 → "more lore" (next project); last → "back to main page"
+        const idx = PROJECT_ORDER.indexOf(key);
+        const btn = document.getElementById('r90-next');
+        if (idx >= 0 && idx < PROJECT_ORDER.length - 1) {
+            btn.textContent = 'more lore';
+            const next = PROJECT_ORDER[idx + 1];
+            btn.onclick = () => openProject(next);
+        } else {
+            btn.textContent = 'back to main page';
+            btn.onclick = () => closePanel('comic');
+        }
+
+        openPanel('comic');
+    }
+
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             document.querySelectorAll('.panel.open').forEach(p => {
@@ -1200,9 +1789,10 @@
     });
 
     /* ── cursor tracking ── */
+    const HAS_HOVER = window.matchMedia('(hover: hover)').matches;
     const cursorDiv  = document.getElementById('custom-cursor');
     const crayonSvgEl = document.getElementById('crayon-svg');
-    let crayonAngle = -35;
+    let crayonAngle = 35;
     let prevCursorX = window.innerWidth / 2;
 
     /* ── 3D inverted parallax via rAF ──
@@ -1231,20 +1821,22 @@
     let smoothX = mouseX;
     let smoothY = mouseY;
 
-    document.addEventListener('mousemove', e => {
-        const vx = e.clientX - prevCursorX;
-        prevCursorX = e.clientX;
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        const targetAngle = -35 + Math.max(-12, Math.min(12, vx * 1.8));
-        crayonAngle += (targetAngle - crayonAngle) * 0.12;
-        // Position div so crayon tip (bottom-center of SVG) tracks the cursor
-        if (cursorDiv) {
-            cursorDiv.style.left = (e.clientX - 16) + 'px';
-            cursorDiv.style.top  = (e.clientY - 100) + 'px';
-        }
-        if (crayonSvgEl) crayonSvgEl.style.transform = `rotate(${crayonAngle}deg)`;
-    });
+    if (HAS_HOVER) {
+        document.addEventListener('mousemove', e => {
+            const vx = e.clientX - prevCursorX;
+            prevCursorX = e.clientX;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            const targetAngle = 35 + Math.max(-12, Math.min(12, vx * 1.8));
+            crayonAngle += (targetAngle - crayonAngle) * 0.12;
+            // Position div so crayon tip (bottom-center of SVG, 15×45 px) tracks the cursor
+            if (cursorDiv) {
+                cursorDiv.style.left = (e.clientX - 8)  + 'px';
+                cursorDiv.style.top  = (e.clientY - 45) + 'px';
+            }
+            if (crayonSvgEl) crayonSvgEl.style.transform = `rotate(${crayonAngle}deg)`;
+        });
+    }
 
     function raf(timestamp) {
         const t = timestamp / 1000;
@@ -1285,7 +1877,8 @@
         requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    // Parallax / float loop is desktop-only; on touch the objects flow in mobile CSS layout.
+    if (HAS_HOVER) requestAnimationFrame(raf);
 
 
     /* ── drawing canvas ── */
@@ -1359,33 +1952,49 @@
             }
         }
 
-        document.addEventListener('mousedown', e => {
-            if (document.querySelector('.panel.open') || isInteractive(e.target)) return;
+        function strokeStart(x, y, target) {
+            if (document.querySelector('.panel.open')) return false;
+            if (isInteractive(target)) return false;
             drawing = true;
-            lx = e.clientX; ly = e.clientY;
+            lx = x; ly = y;
             crayonStroke(lx - 1, ly - 1, lx, ly);
-        });
-        document.addEventListener('mousemove', e => {
-            if (!drawing) return;
-            crayonStroke(lx, ly, e.clientX, e.clientY);
-            lx = e.clientX; ly = e.clientY;
-        });
-        document.addEventListener('mouseup',    () => { drawing = false; });
-        document.addEventListener('mouseleave', () => { drawing = false; });
+            return true;
+        }
+        function strokeMove(x, y) {
+            if (!drawing) return false;
+            crayonStroke(lx, ly, x, y);
+            lx = x; ly = y;
+            return true;
+        }
+        function strokeEnd() { drawing = false; }
+
+        // Mouse path (desktop)
+        document.addEventListener('mousedown', e => strokeStart(e.clientX, e.clientY, e.target));
+        document.addEventListener('mousemove', e => strokeMove(e.clientX, e.clientY));
+        document.addEventListener('mouseup',    strokeEnd);
+        document.addEventListener('mouseleave', strokeEnd);
+
+        // Touch path (mobile) — single-finger only; preventDefault only when we own the gesture
+        // so two-finger pinch/scroll still work and taps on links/buttons aren't swallowed.
+        document.addEventListener('touchstart', e => {
+            if (e.touches.length !== 1) return;
+            const t = e.touches[0];
+            const hit = document.elementFromPoint(t.clientX, t.clientY);
+            if (strokeStart(t.clientX, t.clientY, hit)) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        document.addEventListener('touchmove', e => {
+            if (!drawing || e.touches.length !== 1) return;
+            const t = e.touches[0];
+            if (strokeMove(t.clientX, t.clientY)) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        document.addEventListener('touchend',    strokeEnd);
+        document.addEventListener('touchcancel', strokeEnd);
     })();
 </script>
 
-<!-- custom cursor -->
-<div id="custom-cursor">
-    <svg id="crayon-svg" width="32" height="100" viewBox="0 0 18 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="3" y="1" width="12" height="5" rx="2.5" fill="#ff9999"/>
-        <rect x="2" y="5" width="14" height="3.5" rx="1" fill="#c8c8c8"/>
-        <rect x="2" y="8" width="14" height="32" fill="#e02020"/>
-        <rect x="2" y="19" width="14" height="9" fill="#c01818"/>
-        <rect x="3.5" y="9" width="3.5" height="30" rx="1.5" fill="rgba(255,255,255,0.25)"/>
-        <path d="M2,40 L9,55 L16,40 Z" fill="#c89040"/>
-        <line x1="6.5" y1="42" x2="9" y2="54" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round"/>
-    </svg>
-</div>
 </body>
 </html>
