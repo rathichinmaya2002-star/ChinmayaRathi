@@ -1040,6 +1040,111 @@
             .wb-card    { width: 94vw; height: 88vh; padding: 22px 16px; }
             .about-stage { padding: 60px 0 30px; }
         }
+
+        /* ════════════════════════════════════════════════════════════
+           MOBILE BOTTOM NAV + DISCOVERABILITY
+           ════════════════════════════════════════════════════════════ */
+
+        /* Bottom nav is hidden by default (desktop) */
+        #mobile-nav { display: none; }
+
+        @media (max-width: 768px) {
+            /* Show the bottom nav, hide the rotated corner chrome */
+            #mobile-nav {
+                display: flex;
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 9000;
+                justify-content: space-around;
+                align-items: stretch;
+                background: rgba(15, 15, 15, 0.92);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border-top: 2px solid rgba(255,255,255,0.08);
+                padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+                font-family: var(--f-hand);
+            }
+            .mn-btn {
+                flex: 1;
+                min-width: 60px;
+                min-height: 56px;
+                padding: 6px 4px 4px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                background: none;
+                border: none;
+                color: #f3f3f3;
+                font-family: var(--f-hand);
+                font-weight: 600;
+                font-size: 14px;
+                line-height: 1;
+                letter-spacing: 0.02em;
+                text-decoration: none;
+                cursor: pointer;
+                transition: color 0.15s, transform 0.12s;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .mn-btn svg {
+                width: 24px;
+                height: 24px;
+                color: var(--green);
+                transition: color 0.15s;
+            }
+            .mn-btn:active {
+                transform: scale(0.93);
+            }
+            .mn-btn:active svg { color: var(--pink); }
+            .mn-btn span { font-size: 13px; }
+
+            /* Corner badges replaced by the bottom nav on mobile */
+            #badge, #linkedin { display: none !important; }
+
+            /* Object captions — hand-drawn label under each scene object */
+            .obj::after {
+                content: attr(data-mobile-caption);
+                display: block;
+                font-family: var(--f-hand);
+                font-weight: 600;
+                font-size: 22px;
+                color: var(--green);
+                text-align: center;
+                margin-top: 10px;
+                letter-spacing: 0.02em;
+                text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+                opacity: 0.92;
+            }
+            .obj { text-align: center; }
+
+            /* Subtle breathing pulse so the objects don't read as static art */
+            @keyframes mobile-pulse {
+                0%, 100% { transform: scale(1); }
+                50%      { transform: scale(1.035); }
+            }
+            .obj svg { animation: mobile-pulse 3.4s ease-in-out infinite; }
+            #diary-obj svg { animation-delay: 0.6s; animation-duration: 4s; }
+            #easel-obj svg { animation-delay: 1.4s; animation-duration: 3.8s; }
+
+            /* Bottom-pad scene + panels so content clears the 64px nav */
+            #scene { padding-bottom: 140px; }
+            .panel-inner { padding-bottom: 110px; }
+            .about-stage { padding-bottom: 110px; }
+            .wb-card { margin-bottom: 90px; }
+
+            /* Hide the nav on the Geocities comic panel — that panel has its own
+               full-screen 90s aesthetic and the dark glass nav clashes badly */
+            body:has(#panel-comic.open) #mobile-nav { display: none; }
+        }
+
+        /* Respect reduced-motion: kill the pulse */
+        @media (prefers-reduced-motion: reduce) {
+            .obj svg { animation: none !important; }
+            .mn-btn { transition: none; }
+        }
     </style>
 </head>
 <body>
@@ -1150,6 +1255,7 @@
     <!-- ── LAPTOP (→ about) ── -->
     <div class="obj" id="laptop-obj" onclick="openPanel('about')"
          role="button" tabindex="0" aria-label="About Chinmaya"
+         data-mobile-caption="About me →"
          onkeydown="if(event.key==='Enter')openPanel('about')">
         <svg viewBox="0 0 380 310" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
             <defs>
@@ -1198,6 +1304,7 @@
     <!-- ── DIGITAL DIARY (→ about) ── -->
     <div class="obj" id="diary-obj" onclick="window.open('https://www.instagram.com/chikabrgr/','_blank')"
          role="button" tabindex="0" aria-label="Digital Diary — Instagram"
+         data-mobile-caption="My diary on IG →"
          onkeydown="if(event.key==='Enter')window.open('https://www.instagram.com/chikabrgr/','_blank')">
         <svg viewBox="0 0 210 270" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
             <defs>
@@ -1239,6 +1346,7 @@
     <!-- ── WHITEBOARD EASEL (→ projects) ── -->
     <div class="obj" id="easel-obj" onclick="openPanel('projects')"
          role="button" tabindex="0" aria-label="Projects"
+         data-mobile-caption="My projects →"
          onkeydown="if(event.key==='Enter')openPanel('projects')">
         <svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
             <defs>
@@ -1995,6 +2103,42 @@
         document.addEventListener('touchcancel', strokeEnd);
     })();
 </script>
+
+<!-- ══ MOBILE BOTTOM NAV — visible only ≤ 768px, hidden when comic panel is open ══ -->
+<nav id="mobile-nav" aria-label="Primary mobile navigation">
+    <button class="mn-btn" type="button" onclick="openPanel('about')" aria-label="About">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>about</span>
+    </button>
+    <button class="mn-btn" type="button" onclick="openPanel('projects')" aria-label="Projects">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
+            <line x1="7" y1="16" x2="4" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="17" y1="16" x2="20" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="12" y1="16" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>work</span>
+    </button>
+    <a class="mn-btn" href="https://www.instagram.com/chikabrgr/" target="_blank" rel="noopener" aria-label="Digital Diary on Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 4 L18 4 L18 21 L7 21 Q6 21 6 20 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <line x1="6" y1="9" x2="18" y2="9" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="9" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>diary</span>
+    </a>
+    <a class="mn-btn" href="https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME" target="_blank" rel="noopener" aria-label="Contact via email">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="6" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M3 7 L12 14 L21 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span>say hi</span>
+    </a>
+</nav>
 
 </body>
 </html>
