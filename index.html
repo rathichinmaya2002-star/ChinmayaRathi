@@ -2189,8 +2189,16 @@
         body.classList.add('intro-playing');
 
         // ─────────── PHASE 1 SETUP: PS shape strokes ───────────
+        // The SVG now contains BOTH .ps-desktop AND .ps-mobile shape sets;
+        // CSS hides one based on viewport. Animating all 35 elements when
+        // only the visible 15-20 will render is pure wasted work — set up
+        // initial state, run getTotalLength, stage transitions, all on
+        // shapes that never paint. Target only the visible group.
+        const groupCls = window.matchMedia('(max-width: 768px)').matches
+            ? '.ps-mobile' : '.ps-desktop';
         const strokes = document.querySelectorAll(
-            '#strokes polygon, #strokes circle, #strokes rect, #strokes line'
+            `#strokes ${groupCls} polygon, #strokes ${groupCls} circle, ` +
+            `#strokes ${groupCls} rect, #strokes ${groupCls} line`
         );
         strokes.forEach(el => {
             const len = (typeof el.getTotalLength === 'function')
