@@ -72,8 +72,10 @@
             transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
         }
 
-        .obj:hover svg {
-            transform: scale(1.06) rotate(-2deg);
+        @media (hover: hover) {
+            .obj:hover svg {
+                transform: scale(1.06) rotate(-2deg);
+            }
         }
 
         /* Static layout positions — JS overrides transform at runtime */
@@ -526,6 +528,23 @@
         .about-text-body p { margin: 0 0 14px; }
         .about-text-body p:last-of-type { margin-bottom: 18px; }
 
+        /* Typewriter cursor — solid block that blinks while typing, persists at end.
+           Underscore character used because it sits at baseline like a CRT cursor. */
+        .tw-cursor {
+            display: inline-block;
+            margin-left: 1px;
+            color: inherit;
+            font-weight: 700;
+            animation: tw-blink 0.62s steps(1) infinite;
+            transform: translateY(0);
+        }
+        @keyframes tw-blink {
+            50% { opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tw-cursor { animation: none; }
+        }
+
         /* pastel-pink CTA button */
         .about-cta {
             display: block;
@@ -905,70 +924,99 @@
 
         /* ── small viewports (≤ 768px): stack the scene, reflow the about panel ── */
         @media (max-width: 768px) {
-            /* Let the page scroll naturally; #scene now flows in document order */
+            /* Scene stays fixed and full-bleed — composed, not stacked.
+               PlayStation shapes behind, the 3 objects placed at curated mobile coords. */
             html, body {
-                overflow-x: hidden;
-                overflow-y: auto;
-                height: auto;
-                min-height: 100%;
+                overflow: hidden;
+                height: 100%;
             }
 
             /* bg-text stays fixed behind everything */
             #bg-text { z-index: 0; }
 
-            /* Scene becomes a relative, vertically stacked column */
             #scene {
-                position: relative;
-                inset: auto;
-                min-height: 100vh;
-                padding: 96px 18px 120px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 42px;
-                overflow: visible;
+                position: fixed;
+                inset: 0;
+                display: block;
+                padding: 0;
+                overflow: hidden;
             }
 
-            /* Background brushstrokes become a soft backdrop */
+            /* PlayStation shape backdrop — full brightness, no dim */
             #strokes {
                 position: absolute;
                 inset: 0;
                 width: 100%;
                 height: 100%;
-                opacity: 0.55;
+                opacity: 1;
                 z-index: 0;
                 pointer-events: none;
-                transform: none !important;  /* parallax disabled — see JS */
+                transform: none !important;  /* JS parallax already gated off on touch */
             }
 
-            /* Lobby objects unhinge from absolute coords, stack in source order */
-            .obj {
-                position: relative !important;
-                left: auto !important;
-                right: auto !important;
-                top: auto !important;
-                bottom: auto !important;
-                z-index: 2;
-                transform: none !important;  /* parallax + float disabled on touch */
-            }
+            /* Vertical-flow composition with playful asymmetric horizontal offsets.
+               Inspired by bryantcodes.art mobile: top accent → big middle hero → secondary below,
+               each tilted, each shifted off the centerline for whimsy. */
+            .obj { z-index: 10; }
             .obj svg { transition: none; }
-            #laptop-obj { width: min(82vw, 420px); }
-            #diary-obj  { width: min(48vw, 220px); }
-            #easel-obj  { width: min(66vw, 340px); }
+            /* Diary — lower-left. Sits below the laptop with ~7% breathing
+               room so it never overlaps the laptop body. */
+            #diary-obj {
+                top: 72% !important;
+                left: 12% !important;
+                right: auto !important;
+                bottom: auto !important;
+                width: clamp(110px, 30vw, 150px) !important;
+                transform: rotate(5deg) !important;
+            }
+            /* Laptop — center hero */
+            #laptop-obj {
+                left: 50% !important;
+                top: 51% !important;
+                right: auto !important;
+                bottom: auto !important;
+                width: clamp(240px, 70vw, 340px) !important;
+                transform: translate(-50%, -50%) rotate(-2deg) !important;
+            }
+            /* Easel — upper-right. Width reduced 20% from the original
+               44vw so it doesn't crowd the let's-connect badge, and
+               nudged 5% lower for additional vertical clearance. */
+            #easel-obj {
+                top: 15% !important;
+                left: 60% !important;
+                right: auto !important;
+                bottom: auto !important;
+                width: clamp(120px, 35vw, 168px) !important;
+                transform: rotate(-3deg) !important;
+            }
 
-            /* Top-left "let's connect!" + bottom-right LinkedIn — smaller scale, real hitbox */
+            /* Bring back the rotated corner chrome — signature personality.
+               Scale + offsets re-tuned to read like the desktop badges:
+               clearly visible in their corners, slightly bleeding off-screen
+               so the corner-anchored scale still feels playful, not boxed. */
             #badge, #linkedin {
-                transform: scale(1.25) !important;
-                font-size: 13px !important;
-                padding: 14px 18px !important;
-                filter: drop-shadow(black 0px 0px 0.25rem);
+                display: block !important;
+                transform: scale(1.7) !important;
+                font-size: 12px !important;
+                padding: 10px 12px !important;
+                opacity: 0.9 !important;
+                filter: drop-shadow(black 0px 0px 0.3rem) drop-shadow(black 0px 0px 0.3rem);
             }
+            #badge {
+                top: -1.4rem !important;
+                left: -0.9rem !important;
+            }
+            #linkedin {
+                bottom: -2rem !important;
+                right: -0.9rem !important;
+            }
+            #badge:active, #linkedin:active,
             #badge:hover, #linkedin:hover {
-                transform: scale(1.4) !important;
+                transform: scale(2.1) !important;
+                opacity: 1 !important;
             }
 
-            /* ── About panel: drop strict SVG aspect-ratio, stack as retro modal ── */
+            /* ── About panel: CRT stays, content windows stack underneath as hero+below ── */
             #panel-about {
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
@@ -976,17 +1024,20 @@
             }
             .about-back-btn { top: 14px; right: 14px; }
             .about-stage {
-                width: 92vw;
-                max-width: 540px;
+                width: 96vw;
+                max-width: 580px;
                 max-height: none;
                 aspect-ratio: auto;
                 display: flex;
                 flex-direction: column;
-                gap: 20px;
-                padding: 72px 0 40px;
+                gap: 14px;
+                padding: 70px 0 60px;
                 margin: 0 auto;
             }
-            .about-monitor { display: none; }  /* hide the CRT chrome — content is the focus */
+            /* Bryant's mobile reference shows About as just the stacked retro windows —
+               the CRT is a desktop flourish that doesn't translate. The two windows ARE the soul. */
+            .about-monitor { display: none; }
+            /* Content windows stack BELOW the monitor as the real readable content */
             .about-screen-overlay {
                 position: static;
                 left: auto; top: auto;
@@ -1003,15 +1054,25 @@
                 right: auto !important;
                 top: auto !important;
                 bottom: auto !important;
-                width: 100% !important;
-                opacity: 1;            /* skip the staged pop-in on mobile — instant reveal */
+                opacity: 1;
                 animation: none !important;
             }
-            .about-text-win { transform: rotate(-0.8deg); }
-            .about-image-win { transform: rotate(0.8deg); }
+            /* Text window — wide, slight left tilt, like Bryant's BRYANT_SMITH.exe */
+            .about-text-win {
+                width: 96% !important;
+                margin: 0 auto 0 0;
+                transform: rotate(-1.2deg);
+            }
+            /* Image window — smaller, pushed right, more tilt, like Bryant's SELF_CONCEPT.jpg.
+               Smaller width = smaller portrait — no scroll needed to take it in. */
+            .about-image-win {
+                width: 62% !important;
+                margin: 0 4% 0 auto;
+                transform: rotate(2deg);
+            }
             .about-text-body { font-size: 14px; padding: 18px 18px 22px; }
-            .about-tb-label { font-size: 12px; }
-            .about-cta { font-size: 13px; padding: 12px 28px; }
+            .about-tb-label  { font-size: 12px; }
+            .about-cta       { font-size: 13px; padding: 12px 28px; }
 
             /* ── Whiteboard projects panel: fit small screens ── */
             .wb-card {
@@ -1020,131 +1081,94 @@
                 padding: 28px 22px;
             }
             .wb-title-svg { height: clamp(48px, 12vw, 80px); }
-            .wb-name { font-size: clamp(22px, 7vw, 38px); }
+            .wb-name      { font-size: clamp(22px, 7vw, 38px); }
 
             /* ── Comic project panel: tighter padding ── */
             .panel-inner { padding: 28px 18px; }
             .panel-title { font-size: clamp(44px, 13vw, 72px); }
         }
 
-        /* Touch + small screen: lighten the bg canvas so it doesn't compete with content */
-        @media (pointer: coarse) and (max-width: 768px) {
-            #bg-text { opacity: 0.72; }
+        /* Mobile bg-text is now denser per-ring + higher per-character opacity (set in JS).
+           Leaving #bg-text at full opacity so the new density reads as backdrop fill. */
+
+        /* Extra-narrow (≤ 380px) — Pixel 4a, iPhone SE — shrink the vertical-flow composition */
+        @media (max-width: 380px) {
+            /* On very narrow phones the laptop occupies more vertical % of
+               the viewport, so easel + diary need extra clearance. */
+            #diary-obj  { width: clamp(95px, 28vw, 130px) !important; top: 75% !important; left: 10% !important; }
+            #laptop-obj { width: clamp(210px, 72vw, 290px) !important; top: 52% !important; }
+            #easel-obj  { width: clamp(108px, 35vw, 148px) !important; top: 11% !important; left: 58% !important; }
+            .wb-card    { width: 94vw; height: 88vh; padding: 22px 16px; }
+            .about-stage { padding: 56px 0 50px; }
         }
 
-        /* Extra-narrow (≤ 380px) — Pixel 4a, iPhone SE — tighten more */
-        @media (max-width: 380px) {
-            #scene { padding: 80px 12px 100px; gap: 32px; }
-            #laptop-obj { width: min(88vw, 360px); }
-            #easel-obj  { width: min(72vw, 300px); }
-            .wb-card    { width: 94vw; height: 88vh; padding: 22px 16px; }
-            .about-stage { padding: 60px 0 30px; }
+        /* PlayStation shapes — two completely separate sets:
+           .ps-desktop = original scattered scene (4 per type, designed for 1440×900)
+           .ps-mobile  = curated mobile composition (3 per type, 12 total),
+                        sized to leave ~6 free cells in a 5×6 grid and have
+                        a few bleeders that exit the viewport edges. */
+        @media (max-width: 768px) {
+            #strokes .ps-desktop { display: none; }
+        }
+        @media (min-width: 769px) {
+            #strokes .ps-mobile { display: none; }
         }
 
         /* ════════════════════════════════════════════════════════════
-           MOBILE BOTTOM NAV + DISCOVERABILITY
+           MOBILE LIVELINESS — gentle pulse so the objects feel alive,
+           not stamped on the page. Composition is the navigation.
            ════════════════════════════════════════════════════════════ */
-
-        /* Bottom nav is hidden by default (desktop) */
-        #mobile-nav { display: none; }
-
         @media (max-width: 768px) {
-            /* Show the bottom nav, hide the rotated corner chrome */
-            #mobile-nav {
-                display: flex;
-                position: fixed;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 9000;
-                justify-content: space-around;
-                align-items: stretch;
-                background: rgba(15, 15, 15, 0.92);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                border-top: 2px solid rgba(255,255,255,0.08);
-                padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
-                font-family: var(--f-hand);
-            }
-            .mn-btn {
-                flex: 1;
-                min-width: 60px;
-                min-height: 56px;
-                padding: 6px 4px 4px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 3px;
-                background: none;
-                border: none;
-                color: #f3f3f3;
-                font-family: var(--f-hand);
-                font-weight: 600;
-                font-size: 14px;
-                line-height: 1;
-                letter-spacing: 0.02em;
-                text-decoration: none;
-                cursor: pointer;
-                transition: color 0.15s, transform 0.12s;
-                -webkit-tap-highlight-color: transparent;
-            }
-            .mn-btn svg {
-                width: 24px;
-                height: 24px;
-                color: var(--green);
-                transition: color 0.15s;
-            }
-            .mn-btn:active {
-                transform: scale(0.93);
-            }
-            .mn-btn:active svg { color: var(--pink); }
-            .mn-btn span { font-size: 13px; }
-
-            /* Corner badges replaced by the bottom nav on mobile */
-            #badge, #linkedin { display: none !important; }
-
-            /* Object captions — hand-drawn label under each scene object */
-            .obj::after {
-                content: attr(data-mobile-caption);
-                display: block;
-                font-family: var(--f-hand);
-                font-weight: 600;
-                font-size: 22px;
-                color: var(--green);
-                text-align: center;
-                margin-top: 10px;
-                letter-spacing: 0.02em;
-                text-shadow: 0 1px 0 rgba(0,0,0,0.25);
-                opacity: 0.92;
-            }
-            .obj { text-align: center; }
-
-            /* Subtle breathing pulse so the objects don't read as static art */
             @keyframes mobile-pulse {
-                0%, 100% { transform: scale(1); }
-                50%      { transform: scale(1.035); }
+                0%, 100% { transform: var(--mobile-rest, scale(1)); }
+                50%      { transform: var(--mobile-pulse, scale(1.025)); }
             }
-            .obj svg { animation: mobile-pulse 3.4s ease-in-out infinite; }
-            #diary-obj svg { animation-delay: 0.6s; animation-duration: 4s; }
-            #easel-obj svg { animation-delay: 1.4s; animation-duration: 3.8s; }
-
-            /* Bottom-pad scene + panels so content clears the 64px nav */
-            #scene { padding-bottom: 140px; }
-            .panel-inner { padding-bottom: 110px; }
-            .about-stage { padding-bottom: 110px; }
-            .wb-card { margin-bottom: 90px; }
-
-            /* Hide the nav on the Geocities comic panel — that panel has its own
-               full-screen 90s aesthetic and the dark glass nav clashes badly */
-            body:has(#panel-comic.open) #mobile-nav { display: none; }
+            #laptop-obj svg,
+            #diary-obj  svg,
+            #easel-obj  svg {
+                animation: mobile-pulse 4s ease-in-out infinite;
+                transform-origin: center center;
+            }
+            #diary-obj svg { animation-delay: 0.7s; animation-duration: 4.6s; }
+            #easel-obj svg { animation-delay: 1.5s; animation-duration: 4.2s; }
         }
 
         /* Respect reduced-motion: kill the pulse */
         @media (prefers-reduced-motion: reduce) {
             .obj svg { animation: none !important; }
-            .mn-btn { transition: none; }
         }
+
+        /* ════════════════════════════════════════════════════════════
+           INTRO ANIMATION — MS-paint brush draws PS shapes + icons
+           ════════════════════════════════════════════════════════════ */
+        body.intro-playing #badge,
+        body.intro-playing #linkedin {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        body.intro-playing .obj { pointer-events: none; }
+        /* Suppress the mobile-pulse during intro so icons don't bounce mid-wipe */
+        body.intro-playing #laptop-obj svg,
+        body.intro-playing #diary-obj svg,
+        body.intro-playing #easel-obj svg {
+            animation: none !important;
+        }
+        /* PS shape filters OFF during the intro draw — animating
+           stroke-dashoffset under a turbulence filter forces per-frame
+           re-rasterisation of every stroke, which is the entire lag source.
+           The wobble snaps back at cleanup, which reads as the paint
+           "settling" into its hand-drawn form once the brush lifts.
+           Icon filters stay on: their parts animate via opacity (composited),
+           so the filter result is cached and re-used between frames. */
+        body.intro-playing #strokes g[filter] { filter: none !important; }
+
+        body.intro-playing #strokes polygon,
+        body.intro-playing #strokes circle,
+        body.intro-playing #strokes rect,
+        body.intro-playing #strokes line { will-change: stroke-dashoffset; }
+        body.intro-playing .obj svg [fill],
+        body.intro-playing .obj svg [stroke] { will-change: opacity; }
     </style>
 </head>
 <body>
@@ -1189,9 +1213,11 @@
          style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" aria-hidden="true">
 
         <defs>
-            <!-- hand-painted wobble — moderate so shapes stay readable -->
+            <!-- hand-painted wobble — moderate so shapes stay readable.
+                 numOctaves dropped 4→2: at 22+ stroked shapes the per-step filter
+                 cost was the dominant lag source during the intro animation. -->
             <filter id="roughen" x="-14%" y="-14%" width="128%" height="128%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="4" seed="7" result="noise"/>
+                <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="7" result="noise"/>
                 <feDisplacementMap in="SourceGraphic" in2="noise" scale="13"
                                    xChannelSelector="R" yChannelSelector="G"/>
             </filter>
@@ -1199,7 +1225,7 @@
 
         <!-- ══ △ TRIANGLES — PlayStation green #2EBF90 ══ -->
         <g stroke="#2EBF90" fill="none" stroke-linecap="round" stroke-linejoin="round"
-           filter="url(#roughen)" opacity="0.88">
+           filter="url(#roughen)" opacity="0.88" class="ps-desktop">
             <!-- Huge, left edge — bleeds left, anchors scene -->
             <polygon points="-105,622 258,622 76,112" stroke-width="38"/>
             <!-- Large, right-center -->
@@ -1211,7 +1237,7 @@
         </g>
 
         <!-- ══ ○ CIRCLES — PlayStation red #D4293B ══ -->
-        <g stroke="#D4293B" fill="none" filter="url(#roughen)" opacity="0.88">
+        <g stroke="#D4293B" fill="none" filter="url(#roughen)" opacity="0.88" class="ps-desktop">
             <!-- Huge, top-right corner — bleeds both edges -->
             <circle cx="1452" cy="-15" r="272" stroke-width="36"/>
             <!-- Large, left edge — bleeds left -->
@@ -1224,7 +1250,7 @@
 
         <!-- ══ □ SQUARES — PlayStation pink #D640B2 ══ -->
         <g stroke="#D640B2" fill="none" stroke-linecap="round" stroke-linejoin="round"
-           filter="url(#roughen)" opacity="0.88">
+           filter="url(#roughen)" opacity="0.88" class="ps-desktop">
             <!-- Huge, bottom-left — bleeds left + bottom -->
             <rect x="-98"  y="652" width="308" height="308" rx="12" stroke-width="36"/>
             <!-- Large, upper-right quadrant -->
@@ -1236,7 +1262,7 @@
         </g>
 
         <!-- ══ × CROSS — PlayStation blue #2B62D9 ══ -->
-        <g stroke="#2B62D9" fill="none" stroke-linecap="round" filter="url(#roughen)" opacity="0.88">
+        <g stroke="#2B62D9" fill="none" stroke-linecap="round" filter="url(#roughen)" opacity="0.88" class="ps-desktop">
             <!-- Huge X, bottom-right — bleeds right + bottom -->
             <line x1="1258" y1="645" x2="1562" y2="948" stroke-width="38"/>
             <line x1="1562" y1="645" x2="1258" y2="948" stroke-width="38"/>
@@ -1249,6 +1275,63 @@
             <!-- Small X, right-centre-top -->
             <line x1="1162" y1="295" x2="1282" y2="415" stroke-width="17"/>
             <line x1="1282" y1="295" x2="1162" y2="415" stroke-width="17"/>
+        </g>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             MOBILE COMPOSITION (.ps-mobile): 12 shapes total, 3 per type.
+             Designed against a 5×6 cell grid over the visible mobile strip
+             (~x[500,940], y[0,900]). All sizes/stroke-widths unique. Each
+             shape spans ≥2 cells. Several bleed off the viewport edges.
+
+             OVERLAP CONSTRAINT: max 3 shapes overlap anywhere.
+             Intentional cluster: T-huge (bleed bl) + S-small + X-medium
+                                  all nest in the bottom-left mass.
+             Other 9 shapes are visually isolated.
+             ══════════════════════════════════════════════════════════════ -->
+
+        <!-- △ MOBILE TRIANGLES — green -->
+        <g stroke="#2EBF90" fill="none" stroke-linecap="round" stroke-linejoin="round"
+           filter="url(#roughen)" opacity="0.88" class="ps-mobile">
+            <!-- HUGE — bleeds bottom + left, anchors lower-left mass -->
+            <polygon points="350,920 700,920 470,500" stroke-width="32"/>
+            <!-- Medium — upper-center, shifted left of C-huge to avoid touch -->
+            <polygon points="620,210 720,210 670,120" stroke-width="19"/>
+            <!-- Small — mid-left, isolated -->
+            <polygon points="550,330 615,330 583,275" stroke-width="13"/>
+        </g>
+
+        <!-- ○ MOBILE CIRCLES — red -->
+        <g stroke="#D4293B" fill="none" filter="url(#roughen)" opacity="0.88" class="ps-mobile">
+            <!-- HUGE — bleeds top + right corner -->
+            <circle cx="970" cy="-20" r="260" stroke-width="34"/>
+            <!-- Medium — mid-center, clear of T-huge apex zone -->
+            <circle cx="640" cy="430" r="65"  stroke-width="20"/>
+            <!-- Small — upper-left, isolated -->
+            <circle cx="540" cy="200" r="40"  stroke-width="14"/>
+        </g>
+
+        <!-- □ MOBILE SQUARES — pink -->
+        <g stroke="#D640B2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+           filter="url(#roughen)" opacity="0.88" class="ps-mobile">
+            <!-- BIG — bleeds top + left, no longer competing with T-huge -->
+            <rect x="380" y="-60" width="220" height="220" rx="10" stroke-width="30"/>
+            <!-- Medium — lower-right, isolated -->
+            <rect x="800" y="610" width="115" height="115" rx="6"  stroke-width="17"/>
+            <!-- Small — nests inside T-huge (intentional cluster member) -->
+            <rect x="510" y="720" width="80"  height="80"  rx="4"  stroke-width="11"/>
+        </g>
+
+        <!-- × MOBILE CROSSES — blue -->
+        <g stroke="#2B62D9" fill="none" stroke-linecap="round" filter="url(#roughen)" opacity="0.88" class="ps-mobile">
+            <!-- BIG X — bleeds bottom-right corner -->
+            <line x1="820"  y1="750" x2="1000" y2="940" stroke-width="26"/>
+            <line x1="1000" y1="750" x2="820"  y2="940" stroke-width="26"/>
+            <!-- Medium X — nests inside T-huge base (cluster member) -->
+            <line x1="440" y1="810" x2="550" y2="920" stroke-width="16"/>
+            <line x1="550" y1="810" x2="440" y2="920" stroke-width="16"/>
+            <!-- Small X — mid-right, isolated -->
+            <line x1="720" y1="490" x2="790" y2="560" stroke-width="12"/>
+            <line x1="790" y1="490" x2="720" y2="560" stroke-width="12"/>
         </g>
     </svg>
 
@@ -1336,10 +1419,10 @@
             <rect x="154" y="1" width="16" height="42" rx="3" fill="#ff4db3" filter="url(#kid-d)"/>
             <path d="M 154,43 L 162,55 L 170,43" fill="#ff4db3" filter="url(#kid-d)"/>
             <!-- text — no filter -->
-            <text x="118" y="156" text-anchor="middle" fill="#f5ede0"
-                  font-family="Caveat, cursive" font-size="30" font-weight="700">DIGITAL</text>
-            <text x="118" y="192" text-anchor="middle" fill="#f5ede0"
-                  font-family="Caveat, cursive" font-size="30" font-weight="700">DIARY</text>
+            <text x="118" y="128" text-anchor="middle" fill="#f5ede0"
+                  font-family="Caveat, cursive" font-size="30" font-weight="700">digital</text>
+            <text x="118" y="164" text-anchor="middle" fill="#f5ede0"
+                  font-family="Caveat, cursive" font-size="30" font-weight="700">diary</text>
         </svg>
     </div>
 
@@ -1467,8 +1550,8 @@
                     <span class="about-tb-sqbtn"></span>
                 </div>
                 <div class="about-text-body">
-                    <p>I am a freelance growth strategist specialising in consumer study and brand positioning.</p>
-                    <p>I've helped 40+ clients but every brand is unique so let's start by having a conversation about your brand!</p>
+                    <p data-typewriter>I am a growth strategist specialising in consumer study and brand positioning.</p>
+                    <p data-typewriter>I've helped 40+ clients but every brand is unique so let's start by having a conversation about your brand!</p>
                     <button class="about-cta"
                             onclick="window.open('https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME','_blank')">let's grow!</button>
                 </div>
@@ -1653,14 +1736,19 @@
     /* ── concentric oval background text (Canvas — positions pre-computed, no SVG layout cost) ── */
     (function () {
         const QUOTE = "We can't always fight nature, John. We can't fight change. We can't fight gravity. We can't fight nothing. My whole life, all I ever did was fight. — But I can't give up, neither. I can't fight my own nature. That's the paradox, John. You see?  ";
-        // Mobile / touch detection — used to lighten the canvas workload
+        // Match the desktop (laptop) bg-text aesthetic on mobile, just more concentrated.
+        // Same char width as desktop, tighter ring gap so rings stack denser, and a larger
+        // maxRx multiplier (in buildRings) so the outermost rings spill past the viewport edges.
         const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches;
         const IS_NARROW = window.innerWidth < 768;
         const LOW_POWER = IS_TOUCH || IS_NARROW;
-        const CHAR_W   = LOW_POWER ? 9  : 7;
-        const RING_GAP = LOW_POWER ? 84 : 60;
+        // Mobile coverage goal: ~80% of the dark backdrop is text.
+        // CHAR_W shrinks so more chars pack per ring; RING_GAP shrinks so rings
+        // stack tighter. Combined → roughly 4× the per-pixel coverage on mobile.
+        const CHAR_W   = LOW_POWER ? 5 : 7;
+        const RING_GAP = LOW_POWER ? 18 : 60;
         const FONT     = '11px "Roboto Mono", monospace';
-        const FRAME_MS = 1000 / (LOW_POWER ? 12 : 20); // 12fps on mobile, 20fps desktop
+        const FRAME_MS = 1000 / (LOW_POWER ? 12 : 20); // 12fps throttle on mobile for battery
 
         const canvas = document.getElementById('bg-text');
         const ctx    = canvas.getContext('2d');
@@ -1689,7 +1777,8 @@
             canvas.height = window.innerHeight;
             const cx = canvas.width / 2, cy = canvas.height / 2;
             const aspect = canvas.height / canvas.width;
-            const maxRx  = Math.hypot(cx, cy / aspect) + RING_GAP * 2;
+            // Mobile: extend further past the viewport so outer rings visibly spill off-screen
+            const maxRx  = Math.hypot(cx, cy / aspect) + RING_GAP * (LOW_POWER ? 5 : 2);
             rings = [];
             for (let rx = RING_GAP * 0.55, idx = 0; rx <= maxRx; rx += RING_GAP, idx++) {
                 rings.push({
@@ -1701,7 +1790,9 @@
             }
         }
 
-        let bgTextColor = 'rgba(255,255,255,0.22)';
+        // Per-char intensity. Mobile bumps it so the dense rings still read
+        // clearly against the dark backdrop without becoming a grey wash.
+        let bgTextColor = LOW_POWER ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.22)';
 
         function draw(ts) {
             requestAnimationFrame(draw);
@@ -1746,11 +1837,85 @@
         panel.classList.add('open');
         panel.focus();
         if (name === 'projects') setTimeout(animateWbTitle, 520);
+        // CRT typewriter on About: waits ~1.3s for the cyan window to pop in, then types char by char
+        if (name === 'about') runTypewriter(panel, 1300);
     }
 
     function closePanel(name) {
         document.getElementById('panel-' + name).classList.remove('open');
         if (name === 'projects') resetWbTitle();
+        if (name === 'about') resetTypewriter(document.getElementById('panel-about'));
+    }
+
+    /* ── CRT typewriter for [data-typewriter] paragraphs ──
+       One recurring setTimeout walks paragraph by paragraph, char by char.
+       Cursor (_) blinks on the active paragraph and persists at the very end.
+       prefers-reduced-motion: skip the animation, show full text + static cursor. */
+    function runTypewriter(rootEl, startDelay) {
+        const targets = rootEl.querySelectorAll('[data-typewriter]');
+        if (!targets.length) return;
+
+        if (rootEl._twTimer) clearTimeout(rootEl._twTimer);
+
+        // Pre-measure each paragraph's final rendered height by briefly mounting the full text,
+        // then lock that height as min-height. The cyan box now stays at its final size from the
+        // start — characters appear into pre-allocated space rather than expanding the container.
+        targets.forEach(el => {
+            if (el.dataset.fullText === undefined) el.dataset.fullText = el.textContent;
+            el.style.minHeight = '';
+            el.textContent = el.dataset.fullText;
+            // Reading offsetHeight forces synchronous layout — height is the wrapped final size
+            const h = el.offsetHeight;
+            el.style.minHeight = h + 'px';
+            el.innerHTML = '';
+        });
+
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduced) {
+            targets.forEach((el, i) => {
+                const isLast = i === targets.length - 1;
+                el.innerHTML = el.dataset.fullText + (isLast ? '<span class="tw-cursor">_</span>' : '');
+            });
+            return;
+        }
+
+        const CHAR_MS = 34;
+        const PARAGRAPH_PAUSE = 280;
+        let pIdx = 0, cIdx = 0;
+
+        function tick() {
+            if (pIdx >= targets.length) return;
+            const el = targets[pIdx];
+            const text = el.dataset.fullText;
+            const isLastParagraph = pIdx === targets.length - 1;
+
+            if (cIdx >= text.length) {
+                // Finished this paragraph — strip cursor unless it's the final one
+                el.innerHTML = text + (isLastParagraph ? '<span class="tw-cursor">_</span>' : '');
+                pIdx++;
+                cIdx = 0;
+                if (pIdx < targets.length) rootEl._twTimer = setTimeout(tick, PARAGRAPH_PAUSE);
+                return;
+            }
+
+            cIdx++;
+            el.innerHTML = text.substring(0, cIdx) + '<span class="tw-cursor">_</span>';
+            rootEl._twTimer = setTimeout(tick, CHAR_MS);
+        }
+
+        rootEl._twTimer = setTimeout(tick, startDelay || 1300);
+    }
+
+    function resetTypewriter(rootEl) {
+        if (rootEl._twTimer) {
+            clearTimeout(rootEl._twTimer);
+            rootEl._twTimer = null;
+        }
+        // Restore full plain text + clear the locked min-height so next open re-measures cleanly
+        rootEl.querySelectorAll('[data-typewriter]').forEach(el => {
+            el.style.minHeight = '';
+            if (el.dataset.fullText !== undefined) el.textContent = el.dataset.fullText;
+        });
     }
 
     function animateWbTitle() {
@@ -1947,6 +2112,12 @@
     }
 
     function raf(timestamp) {
+        // Hold the parallax/float loop until the intro brush finishes —
+        // raf-set transforms would fight clip-path + stroke-dash animations.
+        if (document.body.classList.contains('intro-playing')) {
+            requestAnimationFrame(raf);
+            return;
+        }
         const t = timestamp / 1000;
 
         // Exponential smoothing — feels organic, not mechanical
@@ -1987,6 +2158,119 @@
 
     // Parallax / float loop is desktop-only; on touch the objects flow in mobile CSS layout.
     if (HAS_HOVER) requestAnimationFrame(raf);
+
+
+    /* ── INTRO ANIMATION ─────────────────────────────────────────────
+       Phase 1 (0   → 1000ms): every PS shape's stroke draws in along
+                               its path via stroke-dashoffset, in its
+                               own PS color, with stepped easing for
+                               that "coin-rub / doodled passes" feel.
+       Phase 2 (850 → 2650ms): SPRAY PAINT — each icon's child fills/
+                               strokes fade in at randomised delays,
+                               each with stepped opacity transitions.
+                               Pieces accumulate in irregular order
+                               until the icon is solid. Looks sprayed.
+       Cleanup at 3000ms: strips inline state, lifts intro-playing.
+       ──────────────────────────────────────────────────────────────── */
+    function runIntro() {
+        const body = document.body;
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        // ┌──────────────────────────────────────────────────────────┐
+        // │  STROKE EASING (PS shapes) — smooth curve for fluid draw.│
+        // │   'cubic-bezier(0.4, 0, 0.2, 1)'   Material-style smooth │
+        // │   'cubic-bezier(0.5, 0, 0.2, 1)'   confident swoop       │
+        // │   'cubic-bezier(0.85, 0, 0.15, 1)' fast snap             │
+        // │   'cubic-bezier(0.33, 1, 0.68, 1)' easy-out paint        │
+        // └──────────────────────────────────────────────────────────┘
+        const INTRO_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+        body.classList.add('intro-playing');
+
+        // ─────────── PHASE 1 SETUP: PS shape strokes ───────────
+        const strokes = document.querySelectorAll(
+            '#strokes polygon, #strokes circle, #strokes rect, #strokes line'
+        );
+        strokes.forEach(el => {
+            const len = (typeof el.getTotalLength === 'function')
+                ? el.getTotalLength() : 1200;
+            el.style.strokeDasharray  = len;
+            el.style.strokeDashoffset = len;
+            el.style.transition       = 'none';
+        });
+
+        // ─────────── PHASE 2 SETUP: spray-paint icons ───────────
+        // Spray = many small particles landing at random spots. We get the
+        // same visual by individually hiding every fill/stroke element in
+        // each icon, then fading them back in at randomised delays with
+        // chunky stepped opacity transitions. The wobble filter on each
+        // element makes its edges feel stippled when it pops in.
+        const icons = ['laptop-obj', 'diary-obj', 'easel-obj']
+            .map(id => document.getElementById(id))
+            .filter(Boolean);
+
+        const iconParts = [];
+        icons.forEach(el => {
+            const svg = el.querySelector('svg');
+            if (!svg) return;
+            // [fill] catches solid shapes; [stroke] catches outlines;
+            // dedupe via Set since an element may have both.
+            const parts = new Set([
+                ...svg.querySelectorAll('[fill]:not([fill="none"])'),
+                ...svg.querySelectorAll('[stroke]:not([stroke="none"])'),
+            ]);
+            parts.forEach(p => {
+                p.style.opacity    = '0';
+                p.style.transition = 'none';
+                iconParts.push(p);
+            });
+        });
+
+        // Flush the initial (invisible) state so transitions actually animate.
+        void body.offsetHeight;
+
+        requestAnimationFrame(() => {
+            // Phase 1 trigger: every PS stroke draws to dashoffset 0 in ~1s
+            strokes.forEach(el => {
+                el.style.transition       = 'stroke-dashoffset 1s ' + INTRO_EASE;
+                el.style.strokeDashoffset = 0;
+            });
+        });
+
+        // Phase 2 trigger at 850ms — spray-paint stagger
+        setTimeout(() => {
+            const SPRAY_WINDOW = 1500;   // total ms over which parts start fading in
+            const FADE_MIN     = 220;    // each piece's fade-in duration (ms)
+            const FADE_VAR     = 260;    // randomised on top of FADE_MIN
+            iconParts.forEach(p => {
+                const startDelay = Math.random() * SPRAY_WINDOW;
+                const fadeDur    = FADE_MIN + Math.random() * FADE_VAR;
+                // Smooth ease-out per piece — the randomised start delays
+                // give the spray-paint "particles landing" feel without
+                // each piece needing to pop chunkily.
+                p.style.transition = `opacity ${fadeDur}ms cubic-bezier(0.33, 1, 0.68, 1)`;
+                setTimeout(() => { p.style.opacity = '1'; }, startDelay);
+            });
+        }, 850);
+
+        // Cleanup at 3s — strip every inline style so the live site behaves
+        // exactly as it does today (parallax, hover, drawing all resume).
+        setTimeout(() => {
+            body.classList.remove('intro-playing');
+            strokes.forEach(el => {
+                el.style.strokeDasharray  = '';
+                el.style.strokeDashoffset = '';
+                el.style.transition       = '';
+            });
+            iconParts.forEach(p => {
+                p.style.opacity    = '';
+                p.style.transition = '';
+            });
+        }, 3000);
+    }
+
+    runIntro();
 
 
     /* ── drawing canvas ── */
@@ -2061,6 +2345,7 @@
         }
 
         function strokeStart(x, y, target) {
+            if (document.body.classList.contains('intro-playing')) return false;
             if (document.querySelector('.panel.open')) return false;
             if (isInteractive(target)) return false;
             drawing = true;
@@ -2103,42 +2388,6 @@
         document.addEventListener('touchcancel', strokeEnd);
     })();
 </script>
-
-<!-- ══ MOBILE BOTTOM NAV — visible only ≤ 768px, hidden when comic panel is open ══ -->
-<nav id="mobile-nav" aria-label="Primary mobile navigation">
-    <button class="mn-btn" type="button" onclick="openPanel('about')" aria-label="About">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
-            <line x1="8" y1="21" x2="16" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="12" y1="18" x2="12" y2="21" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        <span>about</span>
-    </button>
-    <button class="mn-btn" type="button" onclick="openPanel('projects')" aria-label="Projects">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="4" y="4" width="16" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="2"/>
-            <line x1="7" y1="16" x2="4" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="17" y1="16" x2="20" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="12" y1="16" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span>work</span>
-    </button>
-    <a class="mn-btn" href="https://www.instagram.com/chikabrgr/" target="_blank" rel="noopener" aria-label="Digital Diary on Instagram">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M6 4 L18 4 L18 21 L7 21 Q6 21 6 20 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <line x1="6" y1="9" x2="18" y2="9" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="9" y1="13" x2="15" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <span>diary</span>
-    </a>
-    <a class="mn-btn" href="https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME" target="_blank" rel="noopener" aria-label="Contact via email">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="6" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
-            <path d="M3 7 L12 14 L21 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        </svg>
-        <span>say hi</span>
-    </a>
-</nav>
 
 </body>
 </html>
