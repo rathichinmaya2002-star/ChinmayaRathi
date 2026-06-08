@@ -163,7 +163,23 @@
         }
 
         /* ── custom cursor ── */
-        * { cursor: none !important; }
+        /* Surgically scoped: cursor inherits, so setting it on body
+           covers all non-interactive descendants automatically. We only
+           need to *explicitly* override the elements whose UA stylesheet
+           sets a non-default cursor (links, buttons, form inputs, things
+           with role/tabindex). Avoiding `* { ... }` removes a per-node
+           style recalc that fired on every hover change — the dominant
+           desktop lag source after the intro. */
+        @media (hover: hover) {
+            body { cursor: none !important; }
+            a, button, input, textarea, select, label,
+            [role="button"], [tabindex],
+            .obj, .wb-item, .wb-close, .about-cta, .about-back-btn,
+            .r90-back, .panel-back, .btn-send, .web-safe,
+            #badge, #linkedin {
+                cursor: none !important;
+            }
+        }
         #custom-cursor {
             position: fixed;
             top: -200px;
@@ -1115,23 +1131,13 @@
         }
 
         /* ════════════════════════════════════════════════════════════
-           MOBILE LIVELINESS — gentle pulse so the objects feel alive,
-           not stamped on the page. Composition is the navigation.
+           MOBILE LIVELINESS — DISABLED.
+           The infinite pulse animated transform on filtered SVGs, which
+           forced per-frame filter re-rasterisation on every icon at all
+           times. On mid-tier phones this was the dominant lag source
+           after the intro completed. Composition + tap interactions
+           carry the liveliness now.
            ════════════════════════════════════════════════════════════ */
-        @media (max-width: 768px) {
-            @keyframes mobile-pulse {
-                0%, 100% { transform: var(--mobile-rest, scale(1)); }
-                50%      { transform: var(--mobile-pulse, scale(1.025)); }
-            }
-            #laptop-obj svg,
-            #diary-obj  svg,
-            #easel-obj  svg {
-                animation: mobile-pulse 4s ease-in-out infinite;
-                transform-origin: center center;
-            }
-            #diary-obj svg { animation-delay: 0.7s; animation-duration: 4.6s; }
-            #easel-obj svg { animation-delay: 1.5s; animation-duration: 4.2s; }
-        }
 
         /* Respect reduced-motion: kill the pulse */
         @media (prefers-reduced-motion: reduce) {
@@ -2264,8 +2270,19 @@
 
         // Cleanup at 3s — strip every inline style so the live site behaves
         // exactly as it does today (parallax, hover, drawing all resume).
+        //
+        // PERF: the body.intro-playing rule held #roughen off via CSS.
+        // Removing the class makes 4 filtered <g> groups compute
+        // feTurbulence + feDisplacementMap in the SAME frame — the lag
+        // spike right after intro. Hold filter:none inline before the
+        // class removal, then unset each group's inline filter on its
+        // own frame so the 4 filter recomputes spread across ~400ms.
         setTimeout(() => {
+            const filteredGroups = document.querySelectorAll('#strokes g[filter]');
+            filteredGroups.forEach(g => { g.style.filter = 'none'; });
+
             body.classList.remove('intro-playing');
+
             strokes.forEach(el => {
                 el.style.strokeDasharray  = '';
                 el.style.strokeDashoffset = '';
@@ -2274,6 +2291,11 @@
             iconParts.forEach(p => {
                 p.style.opacity    = '';
                 p.style.transition = '';
+            });
+
+            // Stagger filter re-enable: one group per ~100ms tick.
+            filteredGroups.forEach((g, i) => {
+                setTimeout(() => { g.style.filter = ''; }, 80 + i * 100);
             });
         }, 3000);
     }
