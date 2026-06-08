@@ -33,6 +33,9 @@
         html, body {
             width: 100%;
             height: 100%;
+            /* Pin to small-viewport-height: iOS URL bar collapse won't reflow
+               %-positioned children (icons). Falls back to 100% on older browsers. */
+            height: 100svh;
             overflow: hidden;
         }
 
@@ -45,6 +48,7 @@
         #bg-text {
             position: fixed;
             inset: 0;
+            height: 100svh;  /* canvas surface stays stable too — no jank re-rebuild on URL bar */
             z-index: 0;
             pointer-events: none;
             display: block;
@@ -54,6 +58,7 @@
         #scene {
             position: fixed;
             inset: 0;
+            height: 100svh;  /* matches html/body — stable across iOS URL bar transitions */
             z-index: 1;
             overflow: hidden;
         }
@@ -1917,8 +1922,11 @@
         }
 
         function buildRings() {
-            canvas.width  = window.innerWidth;
-            canvas.height = window.innerHeight;
+            // Use documentElement client dims (= 100svh from CSS) — stable across
+            // iOS URL bar transitions; window.innerHeight is the live visual viewport
+            // and would force a needless rebuild every time the URL bar shifts.
+            canvas.width  = document.documentElement.clientWidth;
+            canvas.height = document.documentElement.clientHeight;
             const cx = canvas.width / 2, cy = canvas.height / 2;
             // Cover from center to viewport corner — the outermost ring's
             // edges touch the viewport corners; rings closer in tile the centre.
@@ -1962,7 +1970,14 @@
         }
 
         buildRings();
-        window.addEventListener('resize', buildRings);
+        // Only rebuild when WIDTH actually changes (orientation flip, true desktop resize).
+        // iOS URL bar collapse fires resize on every transition but only changes height —
+        // rebuilding all rings each time was the dominant cause of perceived first-load jank.
+        let lastBuildW = document.documentElement.clientWidth;
+        window.addEventListener('resize', () => {
+            const w = document.documentElement.clientWidth;
+            if (w !== lastBuildW) { lastBuildW = w; buildRings(); }
+        });
         requestAnimationFrame(draw);
     })();
 
@@ -2440,9 +2455,13 @@
                 p.style.transition = '';
             });
 
-            // Stagger filter re-enable: one group per ~100ms tick.
-            filteredGroups.forEach((g, i) => {
-                setTimeout(() => { g.style.filter = ''; }, 80 + i * 100);
+            // Snap all filters back in the same frame instead of staggering over 400ms.
+            // The stagger was designed to spread the 4 turbulence recomputes across
+            // multiple frames, but on mobile that staggered "wobble settle" reads as
+            // a position readjustment AFTER the intro is supposedly done. A single
+            // 1-frame compute spike is imperceptible; a 400ms visible settle is not.
+            requestAnimationFrame(() => {
+                filteredGroups.forEach(g => { g.style.filter = ''; });
             });
         }, 3000);
     }
@@ -2476,14 +2495,33 @@
     function bakeWobble(svgEl) {
         if (!svgEl) return;
         const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+        const vbX = vb ? vb.x : 0;
+        const vbY = vb ? vb.y : 0;
         const vbW = (vb && vb.width)  || svgEl.getBoundingClientRect().width;
         const vbH = (vb && vb.height) || svgEl.getBoundingClientRect().height;
         if (!vbW || !vbH) { stripFilters(svgEl); return; }
+
+        // OVERHANG PADDING: SVGs with overflow:visible (the 3 icons) let
+        // feDisplacementMap render pixels OUTSIDE the viewBox — that fringe
+        // is what the live render shows but the default rasterisation clips
+        // away. Without this padding, the bake swap "shrinks" the icon by
+        // up to ~26 user units on every edge, which reads as a position shift.
+        // Strokes SVG keeps overflow:hidden so padding stays at 0 there.
+        const overhang = svgEl.style.overflow === 'visible' ? 40 : 0;
+        const padX = vbX - overhang;
+        const padY = vbY - overhang;
+        const padW = vbW + 2 * overhang;
+        const padH = vbH + 2 * overhang;
 
         // Detach text from the rasterisation clone (preserves font fidelity)
         const textNodes = Array.from(svgEl.querySelectorAll('text'));
         const clone = svgEl.cloneNode(true);
         clone.querySelectorAll('text').forEach(t => t.remove());
+        if (overhang) {
+            clone.setAttribute('viewBox', `${padX} ${padY} ${padW} ${padH}`);
+            clone.setAttribute('width',  String(padW));
+            clone.setAttribute('height', String(padH));
+        }
 
         const xml = new XMLSerializer().serializeToString(clone);
         const dataURL = 'data:image/svg+xml;base64,' +
@@ -2494,8 +2532,8 @@
             try {
                 const scale = window.devicePixelRatio || 1;
                 const canvas = document.createElement('canvas');
-                canvas.width  = Math.ceil(vbW * scale);
-                canvas.height = Math.ceil(vbH * scale);
+                canvas.width  = Math.ceil(padW * scale);
+                canvas.height = Math.ceil(padH * scale);
                 const c = canvas.getContext('2d');
                 c.drawImage(probe, 0, 0, canvas.width, canvas.height);
                 const baked = canvas.toDataURL('image/png');
@@ -2504,18 +2542,35 @@
                 const imgNode = document.createElementNS(NS, 'image');
                 imgNode.setAttribute('href', baked);
                 imgNode.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', baked);
-                imgNode.setAttribute('x', '0');
-                imgNode.setAttribute('y', '0');
-                imgNode.setAttribute('width',  vbW);
-                imgNode.setAttribute('height', vbH);
+                imgNode.setAttribute('x', String(padX));
+                imgNode.setAttribute('y', String(padY));
+                imgNode.setAttribute('width',  String(padW));
+                imgNode.setAttribute('height', String(padH));
                 const par = svgEl.getAttribute('preserveAspectRatio');
                 if (par) imgNode.setAttribute('preserveAspectRatio', par);
 
-                while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
-                svgEl.appendChild(imgNode);
-                // Re-attach live text on top — fonts render correctly,
-                // cursor blink keeps working, layout stays sharp at any scale.
-                textNodes.forEach(t => svgEl.appendChild(t));
+                // CROSS-FADE the swap instead of snapping:
+                // The baked PNG can differ from live SVG by sub-pixel anti-aliasing,
+                // pixel snapping, or filter-rasterisation paths even when the geometry
+                // matches. A hard swap makes any tiny difference read as a position
+                // shift. Fading the live shapes out over 320ms while the baked image
+                // sits underneath turns the snap into an imperceptible blend.
+                const fadeGroup = document.createElementNS(NS, 'g');
+                fadeGroup.style.transition = 'opacity 320ms ease-out';
+                // Move every existing child (shapes + defs + any text) into fadeGroup.
+                Array.from(svgEl.children).forEach(c => fadeGroup.appendChild(c));
+                // Pull text back out — it needs to stay live on top of the baked image
+                // after the fade completes (font fidelity, laptop cursor blink).
+                Array.from(fadeGroup.querySelectorAll('text')).forEach(t => fadeGroup.removeChild(t));
+
+                svgEl.appendChild(imgNode);     // bottom layer: the baked PNG
+                svgEl.appendChild(fadeGroup);   // middle layer: live shapes (will fade to 0)
+                textNodes.forEach(t => svgEl.appendChild(t));  // top layer: live text
+
+                requestAnimationFrame(() => { fadeGroup.style.opacity = '0'; });
+                setTimeout(() => {
+                    if (fadeGroup.parentNode === svgEl) svgEl.removeChild(fadeGroup);
+                }, 360);
             } catch (e) {
                 console.warn('Wobble bake → filter-strip fallback for',
                              svgEl.id || svgEl.tagName, e);
@@ -2527,16 +2582,22 @@
     }
 
     // Bake after intro finishes AND fonts are ready.
-    setTimeout(() => {
-        const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
-        fontsReady.then(() => {
-            bakeWobble(document.getElementById('strokes'));
-            ['laptop-obj', 'diary-obj', 'easel-obj'].forEach(id => {
-                const obj = document.getElementById(id);
-                if (obj) bakeWobble(obj.querySelector('svg'));
+    // SKIP ON TOUCH: the bake exists to eliminate hover-induced filter recomputation.
+    // On touch devices there's no hover and the parallax raf is already gated off, so
+    // the filter result stays cached on the GPU layer — no perf benefit to baking, and
+    // the SVG→PNG content swap was the visible "readjustment" 1-2s after the intro.
+    if (window.matchMedia('(hover: hover)').matches) {
+        setTimeout(() => {
+            const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
+            fontsReady.then(() => {
+                bakeWobble(document.getElementById('strokes'));
+                ['laptop-obj', 'diary-obj', 'easel-obj'].forEach(id => {
+                    const obj = document.getElementById(id);
+                    if (obj) bakeWobble(obj.querySelector('svg'));
+                });
             });
-        });
-    }, 3500);
+        }, 3500);
+    }
 
 
     /* ── drawing canvas ── */
@@ -2549,12 +2610,17 @@
             tmp.width  = canvas.width;
             tmp.height = canvas.height;
             tmp.getContext('2d').drawImage(canvas, 0, 0);
-            canvas.width  = window.innerWidth;
-            canvas.height = window.innerHeight;
+            // Stable dims (100svh) — same reasoning as buildRings above.
+            canvas.width  = document.documentElement.clientWidth;
+            canvas.height = document.documentElement.clientHeight;
             ctx.drawImage(tmp, 0, 0);
         }
         resize();
-        window.addEventListener('resize', resize);
+        let lastResizeW = document.documentElement.clientWidth;
+        window.addEventListener('resize', () => {
+            const w = document.documentElement.clientWidth;
+            if (w !== lastResizeW) { lastResizeW = w; resize(); }
+        });
 
         function isInteractive(el) {
             const ids = ['laptop-obj','diary-obj','easel-obj','badge','linkedin','theme-toggle'];
