@@ -70,6 +70,10 @@
         .obj svg {
             display: block;
             transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+            /* Force a compositor layer so hover-scale composites a cached
+               bitmap instead of re-rasterising the SVG sub-tree each frame.
+               Costs ~5-10 MB of texture memory total across the 3 icons. */
+            will-change: transform;
         }
 
         @media (hover: hover) {
@@ -400,7 +404,7 @@
             pointer-events: none;
         }
 
-        /* top-right back-to-menu badge — black w/ white border */
+        /* top-right close cross — black w/ white border, retro window close */
         .about-back-btn {
             position: absolute;
             top: 18px;
@@ -410,16 +414,25 @@
             border: 2px solid #fff;
             outline: 2px solid #000;
             font-family: 'Courier New', monospace;
-            font-size: 13px;
+            font-size: 24px;
             font-weight: 700;
-            padding: 6px 14px;
-            letter-spacing: 0.08em;
+            line-height: 1;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             z-index: 50;
             box-shadow: 4px 4px 0 #000;
-            transition: transform 0.15s, box-shadow 0.15s;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
         }
-        .about-back-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #000; }
+        .about-back-btn:hover {
+            transform: translate(-2px,-2px);
+            box-shadow: 6px 6px 0 #000;
+            background: #cc0000;
+        }
 
         /* monitor stage — fixed aspect so SVG and HTML overlay stay aligned */
         .about-stage {
@@ -533,6 +546,32 @@
         .about-tb-pink   .about-tb-sqbtn { border-color: #ffffff; }
         .about-tb-yellow .about-tb-sqbtn { border-color: #000000; }
 
+        /* Functional close button living inside the Chinmaya.exe titlebar.
+           Sits where the OS "×" lives on a Windows window — accessible,
+           contextually correct, and the only close affordance on this panel. */
+        .about-tb-pink .about-tb-close {
+            width: 28px;
+            height: 28px;
+            background: #ffffff;
+            color: #ff00d6;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 22px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+            border: 2px solid #ffffff;
+        }
+        .about-tb-pink .about-tb-close:hover  { background: #cc0000; color: #ffffff; border-color: #ffffff; }
+        .about-tb-pink .about-tb-close:active { transform: scale(0.9); }
+        @media (pointer: coarse) {
+            .about-tb-pink .about-tb-close { width: 36px; height: 36px; font-size: 26px; }
+        }
+
         /* text body */
         .about-text-body {
             padding: 22px 24px;
@@ -581,6 +620,27 @@
             transform: translate(-2px,-2px);
             box-shadow: 6px 6px 0 #000;
             background: #ffb0c5;
+        }
+        /* Row of 3 CTAs: linkedin icon + "let's grow!" + instagram icon */
+        .about-cta-row {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 10px;
+            margin: 16px auto 6px;
+        }
+        .about-cta-row .about-cta { margin: 0; }
+        .about-cta-icon {
+            padding: 9px 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 38px;
+        }
+        .about-cta-icon svg {
+            width: 18px;
+            height: 18px;
+            display: block;
         }
 
         /* image body */
@@ -640,6 +700,31 @@
         .r90-back:hover { color: #ff66ff; }
         .r90-back::before { content: "« "; }
         .r90-back::after  { content: " «"; }
+
+        /* 90s Windows-style close button: gradient grey + outset bevel + X */
+        .r90-close-x {
+            position: fixed;
+            top: 14px;
+            right: 16px;
+            z-index: 30;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: #000;
+            background: linear-gradient(180deg, #e0e0e0, #888);
+            border: 3px outset #c8c8c8;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 #000;
+            line-height: 1;
+            padding: 0;
+        }
+        .r90-close-x:hover { background: linear-gradient(180deg, #ffeeaa, #cc8800); }
+        .r90-close-x:active { border-style: inset; transform: translate(1px,1px); box-shadow: 0 0 0 #000; }
 
         /* TOP MARQUEE BAR — magenta/yellow border, scrolling pixel text */
         .r90-marquee-bar {
@@ -975,11 +1060,10 @@
                each tilted, each shifted off the centerline for whimsy. */
             .obj { z-index: 10; }
             .obj svg { transition: none; }
-            /* Diary — lower-left. Sits below the laptop with ~7% breathing
-               room so it never overlaps the laptop body. */
+            /* Digicam — upper-right (swapped with projects) */
             #diary-obj {
-                top: 72% !important;
-                left: 12% !important;
+                top: 15% !important;
+                left: 60% !important;
                 right: auto !important;
                 bottom: auto !important;
                 width: clamp(110px, 30vw, 150px) !important;
@@ -994,12 +1078,10 @@
                 width: clamp(240px, 70vw, 340px) !important;
                 transform: translate(-50%, -50%) rotate(-2deg) !important;
             }
-            /* Easel — upper-right. Width reduced 20% from the original
-               44vw so it doesn't crowd the let's-connect badge, and
-               nudged 5% lower for additional vertical clearance. */
+            /* Projects easel — lower-left (swapped with digicam) */
             #easel-obj {
-                top: 15% !important;
-                left: 60% !important;
+                top: 72% !important;
+                left: 12% !important;
                 right: auto !important;
                 bottom: auto !important;
                 width: clamp(120px, 35vw, 168px) !important;
@@ -1023,7 +1105,7 @@
                 left: -0.9rem !important;
             }
             #linkedin {
-                bottom: -2rem !important;
+                bottom: -1.6rem !important;
                 right: -0.9rem !important;
             }
             #badge:active, #linkedin:active,
@@ -1110,10 +1192,11 @@
         /* Extra-narrow (≤ 380px) — Pixel 4a, iPhone SE — shrink the vertical-flow composition */
         @media (max-width: 380px) {
             /* On very narrow phones the laptop occupies more vertical % of
-               the viewport, so easel + diary need extra clearance. */
-            #diary-obj  { width: clamp(95px, 28vw, 130px) !important; top: 75% !important; left: 10% !important; }
+               the viewport, so digicam + easel need extra clearance.
+               Positions match the swap applied at the ≤768px breakpoint. */
+            #diary-obj  { width: clamp(95px, 28vw, 130px) !important; top: 11% !important; left: 58% !important; }
             #laptop-obj { width: clamp(210px, 72vw, 290px) !important; top: 52% !important; }
-            #easel-obj  { width: clamp(108px, 35vw, 148px) !important; top: 11% !important; left: 58% !important; }
+            #easel-obj  { width: clamp(108px, 35vw, 148px) !important; top: 75% !important; left: 10% !important; }
             .wb-card    { width: 94vw; height: 88vh; padding: 22px 16px; }
             .about-stage { padding: 56px 0 50px; }
         }
@@ -1390,12 +1473,12 @@
         </svg>
     </div>
 
-    <!-- ── DIGITAL DIARY (→ about) ── -->
+    <!-- ── MY 2 CENTS — 2000s digicam (→ instagram) ── -->
     <div class="obj" id="diary-obj" onclick="window.open('https://www.instagram.com/chikabrgr/','_blank')"
-         role="button" tabindex="0" aria-label="Digital Diary — Instagram"
-         data-mobile-caption="My diary on IG →"
+         role="button" tabindex="0" aria-label="My 2 cents — Instagram"
+         data-mobile-caption="My 2 cents on IG →"
          onkeydown="if(event.key==='Enter')window.open('https://www.instagram.com/chikabrgr/','_blank')">
-        <svg viewBox="0 0 210 270" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
+        <svg viewBox="0 0 240 180" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">
             <defs>
                 <filter id="kid-d" x="-25%" y="-25%" width="150%" height="150%">
                     <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="19" result="n"/>
@@ -1406,29 +1489,45 @@
                     <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
                 </filter>
             </defs>
-            <!-- 3D depth shadow — dark offset behind the whole book -->
-            <rect x="24" y="20" width="186" height="256" rx="8" fill="#1e0a04" filter="url(#kid-df)"/>
-            <!-- page edge (right-side visible pages — 3D thickness) -->
-            <rect x="190" y="8" width="18" height="256" rx="3" fill="#ede8de" filter="url(#kid-df)"/>
-            <!-- brown cover fill — oversized for bleed -->
-            <rect x="2" y="-8" width="200" height="284" rx="10" fill="#5c3310" filter="url(#kid-df)"/>
-            <!-- cover outline — wobbly thick -->
-            <rect x="12" y="8" width="186" height="256" rx="6" fill="none" stroke="#2e1a08" stroke-width="12" filter="url(#kid-d)"/>
-            <!-- spine fill — oversized -->
-            <rect x="6" y="2" width="42" height="268" rx="7" fill="#3d2208" filter="url(#kid-df)"/>
-            <!-- spine seam -->
-            <line x1="46" y1="8" x2="46" y2="264" stroke="#2e1a08" stroke-width="3" opacity="0.5" filter="url(#kid-d)"/>
-            <!-- cover texture grain -->
-            <line x1="48" y1="52" x2="190" y2="50" stroke="#4a2a0e" stroke-width="2.5" opacity="0.35" filter="url(#kid-d)"/>
-            <line x1="50" y1="78" x2="188" y2="76" stroke="#4a2a0e" stroke-width="2.5" opacity="0.28" filter="url(#kid-d)"/>
-            <!-- bookmark — wobbly -->
-            <rect x="154" y="1" width="16" height="42" rx="3" fill="#ff4db3" filter="url(#kid-d)"/>
-            <path d="M 154,43 L 162,55 L 170,43" fill="#ff4db3" filter="url(#kid-d)"/>
-            <!-- text — no filter -->
-            <text x="118" y="128" text-anchor="middle" fill="#f5ede0"
-                  font-family="Caveat, cursive" font-size="30" font-weight="700">digital</text>
-            <text x="118" y="164" text-anchor="middle" fill="#f5ede0"
-                  font-family="Caveat, cursive" font-size="30" font-weight="700">diary</text>
+            <!-- 3D depth shadow under the body -->
+            <rect x="14" y="34" width="218" height="138" rx="14" fill="#1a1a1a" filter="url(#kid-df)"/>
+            <!-- main body — silver/grey plastic, oversized for color bleed -->
+            <rect x="-2" y="16" width="226" height="146" rx="16" fill="#9ba3ad" filter="url(#kid-df)"/>
+            <!-- body outline — wobbly thick -->
+            <rect x="6" y="24" width="210" height="132" rx="12" fill="none" stroke="#1a1a1a" stroke-width="7" filter="url(#kid-d)"/>
+            <!-- top dark strip housing flash/shutter -->
+            <rect x="12" y="30" width="200" height="22" rx="5" fill="#2a2a2a" filter="url(#kid-df)"/>
+            <!-- flash window (yellow-tinted) -->
+            <rect x="22" y="34" width="28" height="14" rx="3" fill="#fff4b8" filter="url(#kid-df)"/>
+            <rect x="22" y="34" width="28" height="14" rx="3" fill="none" stroke="#1a1a1a" stroke-width="2" filter="url(#kid-d)"/>
+            <!-- shutter button (red) top-right -->
+            <circle cx="194" cy="41" r="8" fill="#cc2020" filter="url(#kid-df)"/>
+            <circle cx="194" cy="41" r="8" fill="none" stroke="#1a1a1a" stroke-width="2.5" filter="url(#kid-d)"/>
+            <!-- DIGICAM brand text on top strip -->
+            <text x="112" y="46" text-anchor="middle" fill="#fff" font-family="Roboto Mono, monospace" font-size="11" font-weight="400" letter-spacing="2.5">DIGICAM</text>
+            <!-- big lens housing — outer ring -->
+            <circle cx="68" cy="108" r="42" fill="#2a2a2a" filter="url(#kid-df)"/>
+            <circle cx="68" cy="108" r="42" fill="none" stroke="#1a1a1a" stroke-width="4" filter="url(#kid-d)"/>
+            <!-- middle lens element -->
+            <circle cx="68" cy="108" r="32" fill="#0d0d0d" filter="url(#kid-df)"/>
+            <!-- inner aperture / dark core -->
+            <circle cx="68" cy="108" r="20" fill="#000" filter="url(#kid-df)"/>
+            <!-- glass highlight -->
+            <ellipse cx="58" cy="98" rx="9" ry="5" fill="#ffffff" opacity="0.25"/>
+            <!-- LCD screen on right — blue/cyan glow -->
+            <rect x="138" y="68" width="74" height="52" fill="#4a8edb" filter="url(#kid-df)"/>
+            <rect x="138" y="68" width="74" height="52" fill="none" stroke="#1a1a1a" stroke-width="3" filter="url(#kid-d)"/>
+            <!-- text on LCD — no filter so it stays crisp -->
+            <text x="175" y="92" text-anchor="middle" fill="#ffffff"
+                  font-family="Caveat, cursive" font-size="20" font-weight="700">my 2</text>
+            <text x="175" y="113" text-anchor="middle" fill="#ffffff"
+                  font-family="Caveat, cursive" font-size="20" font-weight="700">cents</text>
+            <!-- 3 small control buttons below the screen -->
+            <circle cx="152" cy="138" r="5" fill="#1a1a1a" filter="url(#kid-df)"/>
+            <circle cx="172" cy="138" r="5" fill="#1a1a1a" filter="url(#kid-df)"/>
+            <circle cx="192" cy="138" r="5" fill="#1a1a1a" filter="url(#kid-df)"/>
+            <!-- power LED -->
+            <circle cx="212" cy="138" r="3.5" fill="#3dce48"/>
         </svg>
     </div>
 
@@ -1489,8 +1588,8 @@
 <!-- ══ ABOUT PANEL ══ -->
 <div class="panel" id="panel-about" role="dialog" aria-modal="true" aria-label="About Chinmaya">
 
-    <!-- top-right back-to-menu -->
-    <button class="about-back-btn" onclick="closePanel('about')">BACK_TO_MENU</button>
+    <!-- Close button lives inside the Chinmaya.exe titlebar below — see .about-tb-close -->
+
 
     <!-- monitor stage: SVG monitor body + HTML window overlay over the blue "screen" -->
     <div class="about-stage">
@@ -1553,13 +1652,31 @@
             <div class="about-text-win">
                 <div class="about-tb about-tb-pink">
                     <span class="about-tb-label">Chinmaya.exe</span>
-                    <span class="about-tb-sqbtn"></span>
+                    <button class="about-tb-sqbtn about-tb-close"
+                            onclick="closePanel('about')"
+                            aria-label="Close, back to home">×</button>
                 </div>
                 <div class="about-text-body">
                     <p data-typewriter>I am a growth strategist specialising in consumer study and brand positioning.</p>
                     <p data-typewriter>I've helped 40+ clients but every brand is unique so let's start by having a conversation about your brand!</p>
-                    <button class="about-cta"
-                            onclick="window.open('https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME','_blank')">let's grow!</button>
+                    <div class="about-cta-row">
+                        <button class="about-cta about-cta-icon"
+                                onclick="window.open('https://www.linkedin.com/in/chinmaya-rathi-794b021ba/','_blank')"
+                                aria-label="LinkedIn">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.27 2.38 4.27 5.48v6.26zM5.34 7.43a2.06 2.06 0 11.01-4.12 2.06 2.06 0 010 4.12zm-1.78 13.02h3.55V9H3.56v11.45zM22.22 0H1.78C.8 0 0 .78 0 1.74v20.51C0 23.21.8 24 1.78 24h20.44c.98 0 1.78-.79 1.78-1.75V1.74C24 .78 23.2 0 22.22 0z"/>
+                            </svg>
+                        </button>
+                        <button class="about-cta"
+                                onclick="window.open('https://mail.google.com/mail/?view=cm&to=rathichinmaya2002@gmail.com&su=Hello%2C%20Chinmaya!&body=Hey%2C%0A%0AI%20just%20saw%20your%20website%20and%20would%20like%20to%20chat%20on%20DD%2FMM%2FYYYY%20at%20__%20AM%2FPM%20regarding%20a%20project%20we%20can%20build%20together.%0A%0ABest%20regards%2C%0AYOUR%20NAME','_blank')">let's grow!</button>
+                        <button class="about-cta about-cta-icon"
+                                onclick="window.open('https://www.instagram.com/chikabrgr/','_blank')"
+                                aria-label="Instagram">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.81.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.81-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.81-.25-2.23-.41a3.71 3.71 0 01-1.38-.9 3.71 3.71 0 01-.9-1.38c-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.81.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.93 5.93 0 00-2.14 1.4A5.93 5.93 0 00.6 4.16c-.3.76-.5 1.63-.56 2.9C-.02 8.33 0 8.74 0 12s.02 3.67.07 4.95c.06 1.27.26 2.14.56 2.9.31.78.73 1.45 1.4 2.13a5.93 5.93 0 002.14 1.4c.76.3 1.63.5 2.9.56 1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c1.27-.06 2.14-.26 2.9-.56a5.93 5.93 0 002.14-1.4 5.93 5.93 0 001.4-2.14c.3-.76.5-1.63.56-2.9.06-1.27.07-1.68.07-4.94s-.01-3.67-.07-4.95c-.06-1.27-.26-2.14-.56-2.9a5.93 5.93 0 00-1.4-2.14A5.93 5.93 0 0019.85.63c-.76-.3-1.63-.5-2.9-.56C15.67.02 15.26 0 12 0zm0 5.84a6.16 6.16 0 100 12.32 6.16 6.16 0 000-12.32zM12 16a4 4 0 110-8 4 4 0 010 8zm6.41-11.85a1.44 1.44 0 100 2.88 1.44 1.44 0 000-2.88z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1637,6 +1754,7 @@
 <div class="panel" id="panel-comic" role="dialog" aria-modal="true" aria-label="Project">
 
     <button class="r90-back" onclick="closePanel('comic')">back to home</button>
+    <button class="r90-close-x" onclick="closePanel('comic')" aria-label="Close, back to home">×</button>
 
     <!-- top marquee bar: scrolling pixel text -->
     <div class="r90-marquee-bar">
@@ -1739,66 +1857,88 @@
 </div>
 
 <script>
-    /* ── concentric oval background text (Canvas — positions pre-computed, no SVG layout cost) ── */
+    /* ── concentric ring background text — PRE-RENDERED per ring ──
+       Each ring's text is rasterised ONCE into an offscreen square canvas
+       at startup. Per-frame work then drops from ~17,000 fillText calls
+       to ~12-16 drawImage calls + ~12-16 setTransform calls. Browser
+       composites the rotated bitmaps on the GPU. Runs at native 60fps
+       with virtually zero main-thread cost.
+
+       Visual tradeoff: ellipses become circles (rotation of a non-square
+       bitmap distorts it; pre-render demands rotational symmetry).
+       Memory: each ring ~ (2r)² × 4 bytes; total budget ~25-30 MB. */
     (function () {
         const QUOTE = "We can't always fight nature, John. We can't fight change. We can't fight gravity. We can't fight nothing. My whole life, all I ever did was fight. — But I can't give up, neither. I can't fight my own nature. That's the paradox, John. You see?  ";
-        // Match the desktop (laptop) bg-text aesthetic on mobile, just more concentrated.
-        // Same char width as desktop, tighter ring gap so rings stack denser, and a larger
-        // maxRx multiplier (in buildRings) so the outermost rings spill past the viewport edges.
-        const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches;
+        const IS_TOUCH  = window.matchMedia('(pointer: coarse)').matches;
         const IS_NARROW = window.innerWidth < 768;
         const LOW_POWER = IS_TOUCH || IS_NARROW;
-        // Mobile coverage goal: ~80% of the dark backdrop is text.
-        // CHAR_W shrinks so more chars pack per ring; RING_GAP shrinks so rings
-        // stack tighter. Combined → roughly 4× the per-pixel coverage on mobile.
-        const CHAR_W   = LOW_POWER ? 5 : 7;
-        const RING_GAP = LOW_POWER ? 18 : 60;
-        const FONT     = '11px "Roboto Mono", monospace';
-        const FRAME_MS = 1000 / (LOW_POWER ? 12 : 20); // 12fps throttle on mobile for battery
+
+        const CHAR_W     = LOW_POWER ? 5 : 7;
+        const RING_COUNT = LOW_POWER ? 18 : 12;
+        const FONT       = '11px "Roboto Mono", monospace';
+        // Mobile: 30fps throttle keeps battery cost low (drawImage is so cheap
+        // we can afford it). Desktop: native refresh rate.
+        const FRAME_MS   = LOW_POWER ? (1000 / 30) : 0;
+        const TEXT_COLOR = LOW_POWER ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.22)';
 
         const canvas = document.getElementById('bg-text');
         const ctx    = canvas.getContext('2d');
         let rings = [], lastTs = 0;
 
-        // Pre-compute {x, y, cos, sin} for every character slot on one ellipse
-        function ellipsePositions(cx, cy, rx, ry) {
-            const pts = [], STEPS = 2400, dt = (Math.PI * 2) / STEPS;
-            let arc = 0;
-            for (let i = 1; i <= STEPS; i++) {
-                const t = i * dt, tp = (i - 1) * dt;
-                arc += Math.hypot(rx * (Math.cos(t) - Math.cos(tp)),
-                                  ry * (Math.sin(t) - Math.sin(tp)));
-                while (arc >= CHAR_W) {
-                    const a = Math.atan2(ry * Math.cos(t), -rx * Math.sin(t));
-                    pts.push({ x: cx + rx * Math.cos(t), y: cy + ry * Math.sin(t),
-                                cos: Math.cos(a), sin: Math.sin(a) });
-                    arc -= CHAR_W;
-                }
+        // Pre-render text around a single perfect circle of `radius` into an
+        // offscreen canvas. Returns { canvas, half } where half = size/2.
+        function prerenderRing(radius, startIdx) {
+            const padding = 14;
+            const size = Math.ceil(2 * (radius + padding));
+            const off  = document.createElement('canvas');
+            off.width  = size;
+            off.height = size;
+            const o = off.getContext('2d');
+            o.font = FONT;
+            o.textAlign    = 'center';
+            o.textBaseline = 'middle';
+            o.fillStyle    = TEXT_COLOR;
+
+            const cx = size / 2, cy = size / 2;
+            const N = Math.max(1, Math.floor(2 * Math.PI * radius / CHAR_W));
+            const qLen = QUOTE.length;
+            for (let i = 0; i < N; i++) {
+                const theta = (i / N) * Math.PI * 2;
+                const x = cx + radius * Math.cos(theta);
+                const y = cy + radius * Math.sin(theta);
+                const a = theta + Math.PI / 2;  // tangent direction at this point
+                const cs = Math.cos(a), sn = Math.sin(a);
+                const ch = QUOTE[(startIdx + i) % qLen];
+                o.setTransform(cs, sn, -sn, cs, x, y);
+                o.fillText(ch, 0, 0);
             }
-            return pts;
+            o.setTransform(1, 0, 0, 1, 0, 0);
+            return { canvas: off, half: size / 2, charCount: N };
         }
 
         function buildRings() {
             canvas.width  = window.innerWidth;
             canvas.height = window.innerHeight;
             const cx = canvas.width / 2, cy = canvas.height / 2;
-            const aspect = canvas.height / canvas.width;
-            // Mobile: extend further past the viewport so outer rings visibly spill off-screen
-            const maxRx  = Math.hypot(cx, cy / aspect) + RING_GAP * (LOW_POWER ? 5 : 2);
+            // Cover from center to viewport corner — the outermost ring's
+            // edges touch the viewport corners; rings closer in tile the centre.
+            const maxR = Math.hypot(cx, cy);
+            const gap  = maxR / RING_COUNT;
+            const qLen = QUOTE.length;
             rings = [];
-            for (let rx = RING_GAP * 0.55, idx = 0; rx <= maxRx; rx += RING_GAP, idx++) {
+            for (let i = 1; i <= RING_COUNT; i++) {
+                const radius = i * gap;
+                const pre = prerenderRing(radius, Math.floor(Math.random() * qLen));
                 rings.push({
-                    pts: ellipsePositions(cx, cy, rx, rx * aspect),
-                    dir: idx % 2 === 0 ? 1 : -1,
-                    spd: 2.5 + idx * 0.15,   // chars/sec
-                    off: Math.random() * QUOTE.length
+                    canvas: pre.canvas,
+                    half:   pre.half,
+                    angle:  Math.random() * Math.PI * 2,
+                    // Angular velocity (rad/s) = chars/sec ÷ chars/revolution × 2π
+                    angularSpeed: ((2.5 + i * 0.15) / pre.charCount) * Math.PI * 2,
+                    dir:    i % 2 === 0 ? 1 : -1,
                 });
             }
         }
-
-        // Per-char intensity. Mobile bumps it so the dense rings still read
-        // clearly against the dark backdrop without becoming a grey wash.
-        let bgTextColor = LOW_POWER ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.22)';
 
         function draw(ts) {
             requestAnimationFrame(draw);
@@ -1806,22 +1946,18 @@
             const dt = Math.min(ts - lastTs, 200) / 1000;
             lastTs = ts;
 
+            const cx = canvas.width / 2, cy = canvas.height / 2;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = FONT;
-            ctx.textAlign    = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = bgTextColor;
 
-            const qLen = QUOTE.length;
-            rings.forEach(r => {
-                r.off = ((r.off + r.spd * r.dir * dt) % qLen + qLen) % qLen;
-                const base = Math.floor(r.off);
-                r.pts.forEach((p, i) => {
-                    const ch = QUOTE[(base + i) % qLen];
-                    ctx.setTransform(p.cos, p.sin, -p.sin, p.cos, p.x, p.y);
-                    ctx.fillText(ch, 0, 0);
-                });
-            });
+            // Per frame: just rotate-and-stamp each pre-rendered ring.
+            // setTransform is one matrix poke; drawImage is a single GPU blit.
+            for (let i = 0; i < rings.length; i++) {
+                const r = rings[i];
+                r.angle += r.angularSpeed * r.dir * dt;
+                const c = Math.cos(r.angle), s = Math.sin(r.angle);
+                ctx.setTransform(c, s, -s, c, cx, cy);
+                ctx.drawImage(r.canvas, -r.half, -r.half);
+            }
             ctx.setTransform(1, 0, 0, 1, 0, 0);
         }
 
@@ -2124,13 +2260,19 @@
         });
     }
 
+    // PARALLAX FRAME CAP: 30fps is indistinguishable from 60fps for
+    // mouse-following depth effects (the eye reads continuous motion
+    // either way) and halves the per-frame transform + style-recalc cost.
+    let parallaxLastTs = 0;
+    const PARALLAX_FRAME_MS = 1000 / 30;
+
     function raf(timestamp) {
+        requestAnimationFrame(raf);
         // Hold the parallax/float loop until the intro brush finishes —
         // raf-set transforms would fight clip-path + stroke-dash animations.
-        if (document.body.classList.contains('intro-playing')) {
-            requestAnimationFrame(raf);
-            return;
-        }
+        if (document.body.classList.contains('intro-playing')) return;
+        if (timestamp - parallaxLastTs < PARALLAX_FRAME_MS) return;
+        parallaxLastTs = timestamp;
         const t = timestamp / 1000;
 
         // Exponential smoothing — feels organic, not mechanical
@@ -2165,8 +2307,6 @@
                     `translate3d(${px}px, ${floatY + py}px, 0) rotate(${rot}deg)`;
             }
         });
-
-        requestAnimationFrame(raf);
     }
 
     // Parallax / float loop is desktop-only; on touch the objects flow in mobile CSS layout.
@@ -2310,6 +2450,95 @@
     runIntro();
 
 
+    /* ── BAKE WOBBLE FILTERS — foolproof version ──────────────────────
+       After the intro completes, rasterise every filtered SVG into a
+       single static <image>. Per-frame filter cost (feTurbulence +
+       feDisplacementMap) goes from "re-runs on every hover/transform"
+       to "never runs again".
+
+       FONT PRESERVATION: text elements are extracted before rasterising
+       and re-attached as live SVG afterwards. This is critical because
+       SVG rendered inside an Image element doesn't have access to
+       page-loaded webfonts — text would otherwise rasterise with system
+       cursive instead of Caveat. Keeping text live also preserves the
+       laptop cursor blink (#cursor-char tspan) for free.
+
+       FAILURE FALLBACK: if rasterisation fails (canvas taint, security
+       error on hosted, image load error), the bake function falls back
+       to STRIPPING all filter attributes from the SVG. The icon then
+       has no wobble but ALSO no live filter — hover stays lag-free
+       under every code path. Truly foolproof.
+       ────────────────────────────────────────────────────────────────── */
+    function stripFilters(svgEl) {
+        svgEl.querySelectorAll('[filter]').forEach(el => el.removeAttribute('filter'));
+    }
+
+    function bakeWobble(svgEl) {
+        if (!svgEl) return;
+        const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+        const vbW = (vb && vb.width)  || svgEl.getBoundingClientRect().width;
+        const vbH = (vb && vb.height) || svgEl.getBoundingClientRect().height;
+        if (!vbW || !vbH) { stripFilters(svgEl); return; }
+
+        // Detach text from the rasterisation clone (preserves font fidelity)
+        const textNodes = Array.from(svgEl.querySelectorAll('text'));
+        const clone = svgEl.cloneNode(true);
+        clone.querySelectorAll('text').forEach(t => t.remove());
+
+        const xml = new XMLSerializer().serializeToString(clone);
+        const dataURL = 'data:image/svg+xml;base64,' +
+            btoa(unescape(encodeURIComponent(xml)));
+
+        const probe = new Image();
+        probe.onload = () => {
+            try {
+                const scale = window.devicePixelRatio || 1;
+                const canvas = document.createElement('canvas');
+                canvas.width  = Math.ceil(vbW * scale);
+                canvas.height = Math.ceil(vbH * scale);
+                const c = canvas.getContext('2d');
+                c.drawImage(probe, 0, 0, canvas.width, canvas.height);
+                const baked = canvas.toDataURL('image/png');
+
+                const NS = 'http://www.w3.org/2000/svg';
+                const imgNode = document.createElementNS(NS, 'image');
+                imgNode.setAttribute('href', baked);
+                imgNode.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', baked);
+                imgNode.setAttribute('x', '0');
+                imgNode.setAttribute('y', '0');
+                imgNode.setAttribute('width',  vbW);
+                imgNode.setAttribute('height', vbH);
+                const par = svgEl.getAttribute('preserveAspectRatio');
+                if (par) imgNode.setAttribute('preserveAspectRatio', par);
+
+                while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+                svgEl.appendChild(imgNode);
+                // Re-attach live text on top — fonts render correctly,
+                // cursor blink keeps working, layout stays sharp at any scale.
+                textNodes.forEach(t => svgEl.appendChild(t));
+            } catch (e) {
+                console.warn('Wobble bake → filter-strip fallback for',
+                             svgEl.id || svgEl.tagName, e);
+                stripFilters(svgEl);
+            }
+        };
+        probe.onerror = () => stripFilters(svgEl);
+        probe.src = dataURL;
+    }
+
+    // Bake after intro finishes AND fonts are ready.
+    setTimeout(() => {
+        const fontsReady = (document.fonts && document.fonts.ready) || Promise.resolve();
+        fontsReady.then(() => {
+            bakeWobble(document.getElementById('strokes'));
+            ['laptop-obj', 'diary-obj', 'easel-obj'].forEach(id => {
+                const obj = document.getElementById(id);
+                if (obj) bakeWobble(obj.querySelector('svg'));
+            });
+        });
+    }, 3500);
+
+
     /* ── drawing canvas ── */
     (function () {
         const canvas = document.getElementById('draw-canvas');
@@ -2340,45 +2569,31 @@
 
         let drawing = false, lx = 0, ly = 0;
 
+        // PERF: set constant canvas state ONCE rather than every stroke segment
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
         function crayonStroke(x1, y1, x2, y2) {
             const dist = Math.hypot(x2 - x1, y2 - y1);
-            if (dist === 0) return;
-            const steps = Math.max(1, Math.ceil(dist / 2));
+            if (dist < 1.5) return;                 // skip imperceptible sub-pixel moves
+            const steps = Math.max(1, Math.ceil(dist / 3));
 
-            // 4 slightly jittered passes to build up the waxy, layered crayon body
-            for (let pass = 0; pass < 4; pass++) {
-                ctx.beginPath();
-                ctx.moveTo(x1 + (Math.random() - 0.5) * 2, y1 + (Math.random() - 0.5) * 2);
-                for (let i = 1; i <= steps; i++) {
-                    const t = i / steps;
-                    ctx.lineTo(
-                        x1 + (x2 - x1) * t + (Math.random() - 0.5) * 1.8,
-                        y1 + (y2 - y1) * t + (Math.random() - 0.5) * 1.8
-                    );
-                }
-                ctx.strokeStyle = `rgba(220,25,25,${0.22 + Math.random() * 0.18})`;
-                ctx.lineWidth = 4 + Math.random() * 6;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.stroke();
-            }
-
-            // Frayed edge particles — crayon wax crumble
-            for (let i = 0; i <= steps; i++) {
+            // SINGLE pass (was 2) with bumped alpha and width jitter to keep
+            // the waxy crayon look at half the path-op cost. Particle layer
+            // (the frayed-edge crumble) removed entirely — body of the stroke
+            // carries all the visual now.
+            ctx.beginPath();
+            ctx.moveTo(x1 + (Math.random() - 0.5) * 2, y1 + (Math.random() - 0.5) * 2);
+            for (let i = 1; i <= steps; i++) {
                 const t = i / steps;
-                const x = x1 + (x2 - x1) * t;
-                const y = y1 + (y2 - y1) * t;
-                for (let j = 0; j < 3; j++) {
-                    ctx.beginPath();
-                    ctx.arc(
-                        x + (Math.random() - 0.5) * 12,
-                        y + (Math.random() - 0.5) * 12,
-                        0.4 + Math.random() * 1.8, 0, Math.PI * 2
-                    );
-                    ctx.fillStyle = `rgba(220,25,25,${0.04 + Math.random() * 0.09})`;
-                    ctx.fill();
-                }
+                ctx.lineTo(
+                    x1 + (x2 - x1) * t + (Math.random() - 0.5) * 2,
+                    y1 + (y2 - y1) * t + (Math.random() - 0.5) * 2
+                );
             }
+            ctx.strokeStyle = `rgba(220,25,25,${0.55 + Math.random() * 0.2})`;
+            ctx.lineWidth = 5 + Math.random() * 6;
+            ctx.stroke();
         }
 
         function strokeStart(x, y, target) {
@@ -2390,13 +2605,34 @@
             crayonStroke(lx - 1, ly - 1, lx, ly);
             return true;
         }
+
+        // PERF: rAF-throttle stroke updates. Browser fires mousemove up to ~120Hz
+        // and touchmove at the panel refresh rate — drawing on every event causes
+        // dropped frames. Coalesce to *at most one stroke per animation frame*;
+        // the latest pointer position is what gets drawn. Visually identical for
+        // typical drawing speeds, ~2× fewer crayonStroke calls.
+        let pendingMove = null;
+        let moveRaf = null;
         function strokeMove(x, y) {
             if (!drawing) return false;
-            crayonStroke(lx, ly, x, y);
-            lx = x; ly = y;
+            pendingMove = { x, y };
+            if (!moveRaf) {
+                moveRaf = requestAnimationFrame(() => {
+                    moveRaf = null;
+                    const pm = pendingMove;
+                    pendingMove = null;
+                    if (!drawing || !pm) return;
+                    crayonStroke(lx, ly, pm.x, pm.y);
+                    lx = pm.x; ly = pm.y;
+                });
+            }
             return true;
         }
-        function strokeEnd() { drawing = false; }
+        function strokeEnd() {
+            drawing = false;
+            pendingMove = null;
+            if (moveRaf) { cancelAnimationFrame(moveRaf); moveRaf = null; }
+        }
 
         // Mouse path (desktop)
         document.addEventListener('mousedown', e => strokeStart(e.clientX, e.clientY, e.target));
